@@ -1,0 +1,703 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>MINORI - Personal Digital Secretary</title>
+  <link rel="stylesheet" href="style.css?v=2.2">
+</head>
+<body class="theme-dark">
+  <div class="app-layout">
+    
+    <!-- 1. 사이드바 영역 -->
+    <aside class="sidebar" id="sidebar">
+      
+      <!-- 상단 [채팅] / [설정] 탭 -->
+      <div class="sidebar-top-tabs">
+        <button class="nav-tab-btn active" id="tabChatBtn">채팅</button>
+        <button class="nav-tab-btn" id="tabSettingsBtn">설정</button>
+      </div>
+
+      <!-- [VIEW 1] 채팅 탭 뷰 -->
+      <div class="sidebar-view" id="chatView">
+        <!-- 대화 세션 목록 카드 -->
+        <!-- 개선된 채팅 리스트 및 노트(폴더) 관리 카드 -->
+<div class="card session-card">
+  <!-- 상단 헤더 및 버튼 툴바 -->
+  <div class="session-card-header">
+    <span class="header-title">채팅 리스트</span>
+    <div class="header-actions">
+      <button class="btn-solid-primary" id="btnNewChat" title="새 대화 추가">
+        <svg class="icon-svg" viewBox="0 0 24 24"><path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/></svg>
+        <span>채팅</span>
+      </button>
+      <button class="btn-solid-secondary" id="btnNewNote" title="새 노트(폴더) 생성">
+        <svg class="icon-svg" viewBox="0 0 24 24"><path d="M10 4H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V8c0-1.1-.9-2-2-2h-8l-2-2z"/></svg>
+        <span>노트</span>
+      </button>
+      <button class="btn-solid-secondary" id="btnExportAllChats" title="모든 채팅 백업 내보내기">
+        <svg class="icon-svg" viewBox="0 0 24 24"><path d="M19 9h-4V3H9v6H5l7 7 7-7zM5 18v2h14v-2H5z"/></svg>
+        <span>내보내기</span>
+      </button>
+      <button class="btn-solid-secondary" id="btnImportChats" title="채팅 불러오기">
+        <svg class="icon-svg" viewBox="0 0 24 24"><path d="M9 16h6v-6h4l-7-7-7 7h4zm-4 2h14v2H5z"/></svg>
+        <span>불러오기</span>
+      </button>
+    </div>
+  </div>
+
+  <!-- 폴더(노트) 및 채팅 세션 계층 트리 -->
+  <!-- 폴더(노트) 및 채팅 세션 계층 트리 -->
+  <div class="session-tree-container" id="sessionTree">
+    <!-- 기본 시작 채팅 세션 -->
+    <ul class="root-chat-list">
+      <li class="session-item active" data-chat-id="chat_default" draggable="true">
+        <span class="session-name">미노리 시작 가이드</span>
+        <div class="item-actions">
+          <button class="btn-icon-action action-edit" title="제목 수정">
+            <svg viewBox="0 0 24 24"><path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04c.39-.39.39-1.02 0-1.41l-2.34-2.34c-.39-.39-1.02-.39-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z"/></svg>
+          </button>
+          <button class="btn-icon-action action-export" title="대화 내보내기">
+            <svg viewBox="0 0 24 24"><path d="M19 9h-4V3H9v6H5l7 7 7-7zM5 18v2h14v-2H5z"/></svg>
+          </button>
+          <button class="btn-icon-action danger action-delete" title="채팅 삭제">
+            <svg viewBox="0 0 24 24"><path d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"/></svg>
+          </button>
+        </div>
+      </li>
+    </ul>
+  </div>
+</div>
+
+        <!-- 퀵 모듈 토글 카드 (접이식 & 추가/수정/삭제 지원) -->
+        <div class="card module-card collapsible-card" id="moduleCard">
+          <div class="card-header module-card-header" id="moduleCardHeader" style="cursor: pointer;">
+            <div class="module-header-left" style="display: flex; align-items: center; gap: 6px;">
+              <span class="fold-arrow" id="moduleFoldArrow" style="display: inline-block; transition: transform 0.2s;">▼</span>
+              <span>모듈 설정</span>
+              <span class="module-count-badge" id="moduleCountBadge" style="font-size: 10px; background: #232738; padding: 2px 6px; border-radius: 10px; color: var(--text-accent);">4</span>
+            </div>
+            <div class="module-header-actions" onclick="event.stopPropagation();">
+              <button class="btn-icon-action" id="btnAddModule" title="새 모듈 추가">
+                <svg class="icon-svg-sm" viewBox="0 0 24 24"><path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/></svg>
+              </button>
+            </div>
+          </div>
+          <div class="module-body" id="moduleBody" style="display: flex; flex-direction: column; gap: 6px; margin-top: 6px; max-height: 180px; overflow-y: auto; padding-right: 2px;">
+            <div class="module-list" id="moduleList">
+              <!-- JS에서 동적 렌더링 -->
+            </div>
+          </div>
+        </div>
+
+        <!-- 하단 작업 공간 설정 카드 -->
+        <div class="card workspace-card">
+          <div class="card-header">
+            <span>기본 작업 경로 (Workspace)</span>
+            <button class="icon-btn-sm" id="btnSaveWorkspace" title="경로 저장">
+              <svg class="icon-svg-sm" viewBox="0 0 24 24"><path d="M17 3H5c-1.11 0-2 .9-2 2v14c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V7l-4-4zm-5 16c-1.66 0-3-1.34-3-3s1.34-3 3-3 3 1.34 3 3-1.34 3-3 3zm3-10H5V5h10v4z"/></svg>
+            </button>
+          </div>
+          <div class="workspace-input-box">
+            <input type="text" id="workspacePathInput" class="dark-input" value="D:\AIproject" placeholder="예: C:\MyProject 또는 D:\AIproject">
+          </div>
+          <div class="workspace-status" id="workspaceStatusMsg">경로가 유효합니다.</div>
+        </div>
+      </div>
+
+      <!-- [VIEW 2] 설정 탭 뷰 -->
+      <div class="sidebar-view" id="settingsView" style="display: none;">
+        
+        <!-- 6대 기능 아이콘 바 (모노크롬 SVG 벡터 아이콘) -->
+        <div class="icon-nav-bar">
+          <button class="nav-icon-btn active" title="로어북" data-target="lorebook">
+            <svg class="icon-svg" viewBox="0 0 24 24"><path d="M18 2H6c-1.1 0-2 .9-2 2v16c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zM6 4h5v8l-2.5-1.5L6 12V4z"/></svg>
+          </button>
+          <button class="nav-icon-btn" title="모듈 설정" data-target="modules">
+            <svg class="icon-svg" viewBox="0 0 24 24"><path d="M4 8h4V4H4v4zm6 12h4v-4h-4v4zm-6 0h4v-4H4v4zm0-6h4v-4H4v4zm6 0h4v-4h-4v4zm6-10v4h4V4h-4zm-6 4h4V4h-4v4zm6 6h4v-4h-4v4zm0 6h4v-4h-4v4z"/></svg>
+          </button>
+          <button class="nav-icon-btn" title="TTS 설정" data-target="tts">
+            <svg class="icon-svg" viewBox="0 0 24 24"><path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02zM14 3.23v2.06c2.89.86 5 3.54 5 6.71s-2.11 5.85-5 6.71v2.06c4.01-.91 7-4.49 7-8.77s-2.99-7.86-7-8.77z"/></svg>
+          </button>
+          <button class="nav-icon-btn" title="정규식 스크립트" data-target="script">
+            <svg class="icon-svg" viewBox="0 0 24 24"><path d="M9.4 16.6L4.8 12l4.6-4.6L8 6l-6 6 6 6 1.4-1.4zm5.2 0l4.6-4.6-4.6-4.6L16 6l6 6-6 6-1.4-1.4z"/></svg>
+          </button>
+          <button class="nav-icon-btn" title="AI 모델 & API 설정" data-target="advanced">
+            <svg class="icon-svg" viewBox="0 0 24 24"><path d="M19.14 12.94c.04-.3.06-.61.06-.94 0-.32-.02-.64-.07-.94l2.03-1.58c.18-.14.23-.41.12-.61l-1.92-3.32c-.12-.22-.37-.29-.59-.22l-2.39.96c-.5-.38-1.03-.7-1.62-.94l-.36-2.54c-.04-.24-.24-.41-.48-.41h-3.84c-.24 0-.43.17-.47.41l-.36 2.54c-.59.24-1.13.57-1.62.94l-2.39-.96c-.22-.08-.47 0-.59.22L2.74 8.87c-.12.21-.08.47.12.61l2.03 1.58c-.05.3-.09.63-.09.94s.02.64.07.94l-2.03 1.58c-.18.14-.23.41-.12.61l1.92 3.32c.12.22.37.29.59.22l2.39-.96c.5.38 1.03.7 1.62.94l.36 2.54c.05.24.24.41.48.41h3.84c.24 0 .44-.17.47-.41l.36-2.54c.59-.24 1.13-.56 1.62-.94l2.39.96c.22.08.47 0 .59-.22l1.92-3.32c.12-.22.07-.47-.12-.61l-2.01-1.58zM12 15.6c-1.98 0-3.6-1.62-3.6-3.6s1.62-3.6 3.6-3.6 3.6 1.62 3.6 3.6-1.62 3.6-3.6 3.6z"/></svg>
+          </button>
+          <button class="nav-icon-btn danger" title="데이터 초기화" data-target="delete">
+            <svg class="icon-svg" viewBox="0 0 24 24"><path d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"/></svg>
+          </button>
+        </div>
+
+        <!-- [SUB-PANEL: 모듈 설정 패널] (로어북과 동일한 카드 에디터 구조) -->
+        <div class="sub-panel" id="modulesPanel" style="display: none;">
+          <div class="panel-title">모듈 설정 & 규칙 관리</div>
+          <div style="font-size: 11px; color: var(--text-muted); margin-bottom: 8px; line-height: 1.4;">
+            활성화된 모듈의 시스템 규칙(Prompt Rule)은 미노리의 대화 및 도구 실행 시 실시간으로 주입됩니다.
+          </div>
+
+          <!-- 모듈 카드 에디터 리스트 컨테이너 -->
+          <div class="modules-card-list" id="modulesEditorList" style="display: flex; flex-direction: column; gap: 8px; overflow-y: auto; flex: 1; padding-right: 2px;">
+            <!-- JS 동적 렌더링 -->
+          </div>
+
+          <!-- 하단 액션 바 -->
+          <div style="display: flex; gap: 6px; margin-top: 8px;">
+            <button class="btn-solid-primary" id="btnAddNewModuleCard" style="flex: 1; justify-content: center;">
+              <span>+ 새 모듈 추가</span>
+            </button>
+            <button class="btn-solid-secondary" id="btnSaveAllModules" style="flex: 1; justify-content: center;">
+              <svg class="icon-svg-sm" viewBox="0 0 24 24"><path d="M17 3H5c-1.11 0-2 .9-2 2v14c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V7l-4-4zm-5 16c-1.66 0-3-1.34-3-3s1.34-3 3-3 3 1.34 3 3-1.34 3-3 3zm3-10H5V5h10v4z"/></svg>
+              <span>설정 저장</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- 로어북 관리 서브패널 -->
+        <div class="sub-panel" id="lorebookPanel">
+          <div class="panel-title">로어북</div>
+
+          <!-- 로어북 스코프 3단 탭 -->
+          <div class="sub-tabs">
+            <button class="sub-tab-btn active" id="tabLbNote">노트</button>
+            <button class="sub-tab-btn" id="tabLbChat">채팅</button>
+            <button class="sub-tab-btn" id="tabLbConfig">설정</button>
+          </div>
+
+          <!-- 현재 적용 스코프 안내 배너 -->
+          <div class="lb-scope-banner" id="lbScopeBanner">
+            <span class="scope-icon" id="lbScopeIcon">
+              <svg class="icon-svg-sm" viewBox="0 0 24 24"><path d="M10 4H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V8c0-1.1-.9-2-2-2h-8l-2-2z"/></svg>
+            </span>
+            <span class="scope-text" id="lbScopeText">적용 범위: [업무 & 개발 노트] 전체</span>
+          </div>
+
+          <!-- 로어북 카드 및 폴더 리스트 컨테이너 -->
+          <div class="lorebook-card-list" id="lorebookCardList">
+            
+            <!-- 1. 로어북 폴더(노트) 그룹 예시 -->
+            <div class="lb-folder-group" data-folder-id="lb_folder_custom">
+              <div class="lb-folder-header">
+                <div class="lb-folder-header-left">
+                  <svg class="tree-arrow" viewBox="0 0 24 24"><path d="M8.59 16.59L13.17 12 8.59 7.41 10 6l6 6-6 6-1.41-1.41z"/></svg>
+                  <svg class="icon-folder" viewBox="0 0 24 24"><path d="M10 4H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V8c0-1.1-.9-2-2-2h-8l-2-2z"/></svg>
+                  <span class="lb-folder-title">커스텀 로어북</span>
+                </div>
+                <div class="item-actions">
+                  <button class="btn-icon-action action-add-card-to-folder" title="폴더에 새 로어북 추가">
+                    <svg viewBox="0 0 24 24"><path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/></svg>
+                  </button>
+                  <button class="btn-icon-action action-edit-lb-folder" title="폴더 이름 수정">
+                    <svg viewBox="0 0 24 24"><path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04c.39-.39.39-1.02 0-1.41l-2.34-2.34c-.39-.39-1.02-.39-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z"/></svg>
+                  </button>
+                  <button class="btn-icon-action danger action-delete-lb-folder" title="폴더 삭제">
+                    <svg viewBox="0 0 24 24"><path d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"/></svg>
+                  </button>
+                </div>
+              </div>
+
+              <!-- 폴더 내부 로어북 목록 -->
+              <div class="lb-folder-cards">
+                <div class="lorebook-editor-card collapsed" data-active="true" data-lb-id="lb_001" draggable="true">
+                  <div class="entry-card-body">
+                    <!-- 카드 헤더 (접기 토글 + 액션 버튼) -->
+                    <div class="entry-header">
+                      <div class="entry-header-left">
+                        <span class="fold-arrow">▶</span>
+                        <span class="entry-title">커스텀 로어북 1</span>
+                      </div>
+                      <div class="entry-header-actions">
+                        <button class="icon-btn link-toggle-btn active" title="로어북 활성화/비활성화">
+                          <svg class="icon-svg-sm" viewBox="0 0 24 24"><path d="M3.9 12c0-1.71 1.39-3.1 3.1-3.1h4V7H7c-2.76 0-5 2.24-5 5s2.24 5 5 5h4v-1.9H7c-1.71 0-3.1-1.39-3.1-3.1zM8 13h8v-2H8v2zm9-6h-4v1.9h4c1.71 0 3.1 1.39 3.1 3.1s-1.39 3.1-3.1 3.1h-4V17h4c2.76 0 5-2.24 5-5s-2.24-5-5-5z"/></svg>
+                        </button>
+                        <button class="icon-btn action-export-single-lb" title="이 로어북 내보내기">
+                          <svg class="icon-svg-sm" viewBox="0 0 24 24"><path d="M19 9h-4V3H9v6H5l7 7 7-7zM5 18v2h14v-2H5z"/></svg>
+                        </button>
+                        <button class="icon-btn action-delete-lb danger" title="로어북 삭제">
+                          <svg class="icon-svg-sm" viewBox="0 0 24 24"><path d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"/></svg>
+                        </button>
+                      </div>
+                    </div>
+
+                    <!-- 접히는 상세 입력 영역 -->
+                    <div class="entry-content-collapsible">
+                      <div class="field-group">
+                        <div class="label-with-help">
+                          <label>이름</label>
+                          <span class="help-icon" title="로어북 식별명">?</span>
+                        </div>
+                        <input type="text" class="dark-input lb-name-input" value="커스텀 로어북 1">
+                      </div>
+
+                      <div class="field-group">
+                        <div class="label-with-help">
+                          <label>활성화 키</label>
+                          <span class="help-icon" title="쉼표로 구분해 입력">?</span>
+                        </div>
+                        <input type="text" class="dark-input lb-keys-input" placeholder="','로 나눠주세요">
+                      </div>
+
+                      <div class="field-group">
+                        <div class="label-with-help">
+                          <label>배치 순서</label>
+                          <span class="help-icon" title="프롬프트 주입 우선순위">?</span>
+                        </div>
+                        <input type="number" class="dark-input lb-order-input" value="100">
+                      </div>
+
+                      <div class="field-group">
+                        <label>프롬프트</label>
+                        <textarea class="dark-textarea lb-prompt-input" rows="5" placeholder="주입될 프롬프트 내용을 작성하세요."></textarea>
+                        <div class="token-counter">0 토큰</div>
+                      </div>
+
+                      <div class="checkbox-group">
+                        <label class="custom-checkbox">
+                          <input type="checkbox" class="lb-always-active">
+                          <span class="checkmark"></span>
+                          <span class="check-text">언제나 활성화</span>
+                        </label>
+                        <label class="custom-checkbox">
+                          <input type="checkbox" class="lb-multi-key">
+                          <span class="checkmark"></span>
+                          <span class="check-text">멀티플 키</span>
+                          <span class="help-icon-sm" title="모든 키가 문맥에 존재해야 활성화">?</span>
+                        </label>
+                        <label class="custom-checkbox">
+                          <input type="checkbox" class="lb-regex">
+                          <span class="checkmark"></span>
+                          <span class="check-text">정규식 사용</span>
+                          <span class="help-icon-sm" title="정규식 파싱">?</span>
+                        </label>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- 2. 기본 루트 로어북 목록 (폴더에 속하지 않은 로어북) -->
+            <div class="root-lb-list" id="rootLbList">
+            </div>
+
+          </div>
+
+          <!-- 3. [설정] 서브 탭 뷰 (설정 탭 활성화 시 노출) -->
+          <div class="lorebook-config-view" id="lorebookConfigView" style="display: none;">
+            <div class="card config-card">
+              <div class="card-header">로어북 토큰 제어 설정</div>
+              
+              <div class="field-group">
+                <div class="label-with-help">
+                  <label for="lbMaxTokens">최대 로어북 토큰</label>
+                  <span class="help-icon" title="로어북 프롬프트에 할당할 최대 토큰 수입니다.">?</span>
+                </div>
+                <div class="input-with-unit">
+                  <input type="number" id="lbMaxTokens" class="dark-input" value="1000" min="0" step="100" placeholder="1000">
+                  <span class="unit-text">토큰</span>
+                </div>
+                <span class="field-hint">지정한 토큰(예: 1000)을 초과하는 로어북은 프롬프트 주입 대상에서 무시됩니다.</span>
+              </div>
+
+              <div class="field-group" style="margin-top: 6px;">
+                <label class="field-label-sm">현재 세션 로어북 적용 현황</label>
+                <div class="token-summary-box" id="lbTokenSummary">
+                  <div>- 노트 적용 로어북: <span id="summaryNoteLbCount">1</span>개</div>
+                  <div>- 채팅 적용 로어북: <span id="summaryChatLbCount">0</span>개</div>
+                  <div>- 총 예상 토큰: <span id="summaryEstTokens">0</span> / <span id="summaryMaxTokens">1000</span> 토큰</div>
+                </div>
+              </div>
+
+              <div class="field-group" style="margin-top: 8px;">
+                <button class="btn-solid-primary" id="btnSaveLbConfig" style="width: 100%; justify-content: center;">
+                  <svg class="icon-svg-sm" viewBox="0 0 24 24"><path d="M17 3H5c-1.11 0-2 .9-2 2v14c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V7l-4-4zm-5 16c-1.66 0-3-1.34-3-3s1.34-3 3-3 3 1.34 3 3-1.34 3-3 3zm3-10H5V5h10v4z"/></svg>
+                  <span>로어북 설정 저장</span>
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <!-- 로어북 하단 액션 툴바 -->
+          <div class="lorebook-action-bar" id="lorebookActionBar">
+            <button class="action-btn" id="btnAddLb" title="로어북 추가">
+              <svg class="icon-svg-sm" viewBox="0 0 24 24"><path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/></svg>
+            </button>
+            <button class="action-btn" id="btnExportLb" title="로어북 JSON 다운로드">
+              <svg class="icon-svg-sm" viewBox="0 0 24 24"><path d="M19 9h-4V3H9v6H5l7 7 7-7zM5 18v2h14v-2H5z"/></svg>
+            </button>
+            <button class="action-btn" id="btnAddFolder" title="폴더 만들기">
+              <svg class="icon-svg-sm" viewBox="0 0 24 24"><path d="M10 4H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V8c0-1.1-.9-2-2-2h-8l-2-2z"/></svg>
+            </button>
+            <button class="action-btn" id="btnImportLb" title="로어북 불러오기">
+              <svg class="icon-svg-sm" viewBox="0 0 24 24"><path d="M20 6h-8l-2-2H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V8c0-1.1-.9-2-2-2zm0 12H4V8h16v10z"/></svg>
+            </button>
+          </div>
+        </div>
+
+        <!-- [SUB-PANEL 2] TTS 설정 패널 -->
+        <div class="sub-panel" id="ttsPanel" style="display: none;">
+          <div class="panel-title">TTS 음성 설정</div>
+
+          <div class="tts-container">
+            <div class="card tts-card">
+              <div class="card-header">TTS 서비스 제공자</div>
+              <div class="field-group">
+                <label class="field-label-sm">엔진 선택</label>
+                <select id="ttsProviderSelect" class="dark-input">
+                  <option value="webspeech" selected>Web Speech API (로컬 브라우저 무료)</option>
+                  <option value="openai">OpenAI TTS (tts-1 / tts-1-hd)</option>
+                  <option value="elevenlabs">ElevenLabs (초고품질 다국어)</option>
+                  <option value="google">Google Cloud TTS</option>
+                  <option value="custom">사용자 지정 엔드포인트</option>
+                </select>
+              </div>
+
+              <div class="field-group" id="ttsApiKeyGroup" style="display: none;">
+                <div class="label-with-help">
+                  <label for="ttsApiKeyInput">API Key</label>
+                  <span class="help-icon" title="해당 TTS 서비스의 API 키">?</span>
+                </div>
+                <div class="input-with-action">
+                  <input type="password" id="ttsApiKeyInput" class="dark-input" placeholder="sk-..." autocomplete="off">
+                  <button type="button" class="btn-input-eye" id="btnToggleApiKey" title="키 표시/숨김">
+                    <svg class="icon-svg-sm" viewBox="0 0 24 24"><path d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5zM12 17c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5zm0-8c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3z"/></svg>
+                  </button>
+                </div>
+              </div>
+
+              <div class="field-group" id="ttsEndpointGroup" style="display: none;">
+                <label class="field-label-sm">API 엔드포인트 URL</label>
+                <input type="text" id="ttsEndpointInput" class="dark-input" placeholder="https://api.openai.com/v1/audio/speech">
+              </div>
+
+              <div class="field-group">
+                <label class="field-label-sm">TTS 모델</label>
+                <select id="ttsModelSelect" class="dark-input">
+                  <option value="default">기본 모델 (Default)</option>
+                  <option value="tts-1">OpenAI: tts-1</option>
+                  <option value="tts-1-hd">OpenAI: tts-1-hd</option>
+                  <option value="eleven_multilingual_v2">ElevenLabs: Multilingual v2</option>
+                  <option value="eleven_turbo_v2">ElevenLabs: Turbo v2</option>
+                </select>
+              </div>
+
+              <div class="field-group">
+                <label class="field-label-sm">음성(Voice) 선택</label>
+                <select id="ttsVoiceSelect" class="dark-input">
+                  <option value="default">기본 음성 (시스템 추천)</option>
+                </select>
+              </div>
+
+              <div class="field-group">
+                <div class="label-with-val">
+                  <label class="field-label-sm">재생 속도 (Rate)</label>
+                  <span class="val-display" id="ttsRateVal">1.0x</span>
+                </div>
+                <input type="range" id="ttsRateRange" min="0.5" max="2.0" step="0.1" value="1.0" class="dark-range">
+              </div>
+
+              <div class="field-group">
+                <div class="label-with-val">
+                  <label class="field-label-sm">음높이 (Pitch)</label>
+                  <span class="val-display" id="ttsPitchVal">1.0</span>
+                </div>
+                <input type="range" id="ttsPitchRange" min="0.5" max="1.5" step="0.1" value="1.0" class="dark-range">
+              </div>
+
+              <div class="checkbox-group" style="margin-top: 4px;">
+                <label class="custom-checkbox">
+                  <input type="checkbox" id="ttsAutoPlayCheck">
+                  <span class="checkmark"></span>
+                  <span class="check-text">새 답변 도착 시 자동 TTS 재생</span>
+                </label>
+              </div>
+
+              <div class="tts-button-bar" style="margin-top: 8px; display: flex; gap: 6px;">
+                <button class="btn-solid-secondary" id="btnTestTts" style="flex: 1; justify-content: center;">
+                  <svg class="icon-svg-sm" viewBox="0 0 24 24"><path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02z"/></svg>
+                  <span>음성 테스트</span>
+                </button>
+                <button class="btn-solid-primary" id="btnSaveTts" style="flex: 1; justify-content: center;">
+                  <svg class="icon-svg-sm" viewBox="0 0 24 24"><path d="M17 3H5c-1.11 0-2 .9-2 2v14c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V7l-4-4zm-5 16c-1.66 0-3-1.34-3-3s1.34-3 3-3 3 1.34 3 3-1.34 3-3 3zm3-10H5V5h10v4z"/></svg>
+                  <span>설정 저장</span>
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- [SUB-PANEL 3] 정규식 및 트리거 스크립트 서브패널 -->
+        <div class="sub-panel" id="scriptPanel" style="display: none;">
+          <div class="panel-title">스크립트 설정</div>
+
+          <!-- 정규식 / 트리거 2단 탭 -->
+          <div class="sub-tabs">
+            <button class="sub-tab-btn active" id="tabScriptRegex">정규식 스크립트</button>
+            <button class="sub-tab-btn" id="tabScriptTrigger">트리거 스크립트</button>
+          </div>
+
+          <!-- [VIEW A] 정규식 스크립트 뷰 -->
+          <div class="script-view" id="scriptRegexView">
+            <div class="script-info-banner">
+              IN 매칭 텍스트를 OUT으로 변경합니다. (입력/출력/리퀘스트/디스플레이 4가지 모드 & @@emo 지원)
+            </div>
+
+            <div class="script-card-list" id="regexScriptList">
+              <!-- 정규식 카드 동적 렌더링 -->
+            </div>
+
+            <div class="script-action-bar">
+              <button class="action-btn" id="btnAddRegexScript" title="새 정규식 추가">
+                <svg class="icon-svg-sm" viewBox="0 0 24 24"><path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/></svg>
+                <span>정규식 추가</span>
+              </button>
+              <button class="action-btn" id="btnExportRegex" title="정규식 내보내기">
+                <svg class="icon-svg-sm" viewBox="0 0 24 24"><path d="M19 9h-4V3H9v6H5l7 7 7-7zM5 18v2h14v-2H5z"/></svg>
+                <span>내보내기</span>
+              </button>
+              <button class="action-btn" id="btnImportRegex" title="정규식 불러오기">
+                <svg class="icon-svg-sm" viewBox="0 0 24 24"><path d="M20 6h-8l-2-2H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V8c0-1.1-.9-2-2-2zm0 12H4V8h16v10z"/></svg>
+                <span>불러오기</span>
+              </button>
+            </div>
+          </div>
+
+          <!-- [VIEW B] 트리거 스크립트 뷰 -->
+          <div class="script-view" id="scriptTriggerView" style="display: none;">
+            <div class="script-info-banner">
+              조건 충족 시 실행 또는 {{button::라벨::이름}} 및 [risu-trigger] 버튼 연동
+            </div>
+
+            <div class="script-card-list" id="triggerScriptList">
+              <!-- 트리거 카드 동적 렌더링 -->
+            </div>
+
+            <div class="script-action-bar">
+              <button class="action-btn" id="btnAddTriggerScript" title="새 트리거 추가">
+                <svg class="icon-svg-sm" viewBox="0 0 24 24"><path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/></svg>
+                <span>트리거 추가</span>
+              </button>
+              <button class="action-btn" id="btnExportTrigger" title="트리거 내보내기">
+                <svg class="icon-svg-sm" viewBox="0 0 24 24"><path d="M19 9h-4V3H9v6H5l7 7 7-7zM5 18v2h14v-2H5z"/></svg>
+                <span>내보내기</span>
+              </button>
+              <button class="action-btn" id="btnImportTrigger" title="트리거 불러오기">
+                <svg class="icon-svg-sm" viewBox="0 0 24 24"><path d="M20 6h-8l-2-2H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V8c0-1.1-.9-2-2-2zm0 12H4V8h16v10z"/></svg>
+                <span>불러오기</span>
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- [SUB-PANEL 4] 고급 모델 설정 패널 -->
+        <div class="sub-panel" id="advancedPanel" style="display: none;">
+          <div class="panel-title">AI 모델 & API 설정</div>
+          <div class="card" style="display: flex; flex-direction: column; gap: 12px; padding: 12px;">
+            
+            <!-- Gemini API Key -->
+            <div class="field-group">
+              <div class="label-with-help">
+                <label for="geminiApiKeyInput">Google Gemini API Key</label>
+                <span class="help-icon" title="Google AI Studio에서 발급받은 API 키를 입력하세요.">?</span>
+              </div>
+              <div class="input-with-action">
+                <input type="password" id="geminiApiKeyInput" class="dark-input" placeholder="AIzaSy... 또는 API 키 입력" autocomplete="off">
+                <button type="button" class="btn-input-eye" id="btnToggleGeminiKey" title="키 표시/숨김">
+                  <svg class="icon-svg-sm" viewBox="0 0 24 24"><path d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5zM12 17c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5zm0-8c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3z"/></svg>
+                </button>
+              </div>
+              <span class="field-hint" style="font-size: 10px; color: var(--text-muted); margin-top: 2px;">
+                * 입력한 키는 로컬 backend/data/settings.json에 안전하게 저장됩니다.
+              </span>
+            </div>
+
+            <!-- Model Selection -->
+            <div class="field-group">
+              <div class="label-with-help">
+                <label for="geminiModelSelect">Gemini 모델</label>
+                <span class="help-icon" title="비서 에이전트가 사용할 기본 모델입니다.">?</span>
+              </div>
+              <select id="geminiModelSelect" class="dark-input">
+                <option value="gemini-2.5-flash" selected>gemini-2.5-flash (빠르고 스마트한 표준 추천)</option>
+                <option value="gemini-2.5-pro">gemini-2.5-pro (고급 코딩 및 심층 추론)</option>
+                <option value="gemini-3.8-flash">gemini-3.8-flash (차세대 고속 플래시)</option>
+                <option value="gemini-3.1-pro-preview">gemini-3.1-pro-preview (연구/복합 추론)</option>
+                <option value="custom">사용자 지정 모델 직접 입력</option>
+              </select>
+            </div>
+
+            <!-- Custom Model Input (if selected custom) -->
+            <div class="field-group" id="customModelGroup" style="display: none;">
+              <label class="field-label-sm">사용자 지정 모델 ID</label>
+              <input type="text" id="customModelInput" class="dark-input" placeholder="예: gemini-2.5-flash">
+            </div>
+
+            <!-- Temperature Slider -->
+            <div class="field-group">
+              <div class="label-with-val">
+                <label class="field-label-sm">추론 다양성 (Temperature)</label>
+                <span class="val-display" id="geminiTempDisplay">0.2</span>
+              </div>
+              <input type="range" id="geminiTempRange" min="0.0" max="1.0" step="0.05" value="0.2" class="dark-range">
+              <span class="field-hint" style="font-size: 10px; color: var(--text-muted);">
+                * 에이전트의 도구 실행 및 정확한 파일 제어에는 0.0 ~ 0.3의 낮은 온도가 권장됩니다.
+              </span>
+            </div>
+
+            <!-- Connection Test Result Badge/Box -->
+            <div id="apiConnectionStatusBox" style="display: none; padding: 10px; border-radius: 4px; font-size: 11px; line-height: 1.4;">
+            </div>
+
+            <!-- Action Buttons -->
+            <div style="display: flex; gap: 6px; margin-top: 4px;">
+              <button class="btn-solid-secondary" id="btnTestApiConnection" style="flex: 1; justify-content: center; padding: 8px;">
+                <svg class="icon-svg-sm" viewBox="0 0 24 24"><path d="M7 2v11h3v9l7-12h-4l4-8z"/></svg>
+                <span>연결 테스트</span>
+              </button>
+              <button class="btn-solid-primary" id="btnSaveApiSettings" style="flex: 1; justify-content: center; padding: 8px;">
+                <svg class="icon-svg-sm" viewBox="0 0 24 24"><path d="M17 3H5c-1.11 0-2 .9-2 2v14c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V7l-4-4zm-5 16c-1.66 0-3-1.34-3-3s1.34-3 3-3 3 1.34 3 3-1.34 3-3 3zm3-10H5V5h10v4z"/></svg>
+                <span>설정 저장</span>
+              </button>
+            </div>
+
+          </div>
+        </div>
+
+        <!-- [SUB-PANEL 5] 공유 및 삭제 패널 -->
+        <div class="sub-panel" id="deletePanel" style="display: none;">
+          <div class="panel-title">데이터 초기화</div>
+          <div class="card" style="font-size: 11px; display: flex; flex-direction: column; gap: 8px; padding: 12px;">
+            <button class="btn-solid-secondary danger" id="btnClearAllData" style="justify-content: center; padding: 8px;">
+              <svg class="icon-svg-sm" viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z"/></svg>
+              <span>전체 대화 및 설정 초기화</span>
+            </button>
+          </div>
+        </div>
+
+      </div>
+    </aside>
+
+    <!-- 2. 중앙 메인 대화 영역 -->
+    <main class="main-content">
+      <!-- 사이드바 접기/펼치기 토글 버튼 -->
+      <button class="sidebar-toggle-btn" id="btnToggleSidebar" title="사이드바 접기">←</button>
+
+      <!-- 미노리 프로필 카드 -->
+      <div class="profile-card">
+        <div class="avatar-box cyber-core-box" id="minoriAvatarBox">
+          <div class="cyber-core" id="cyberCore">
+            <div class="cyber-ring-outer"></div>
+            <div class="cyber-ring-inner"></div>
+            <div class="cyber-core-center"></div>
+          </div>
+        </div>
+        <div class="profile-info">
+          <div class="profile-name">MINORI (디지털 비서)</div>
+          <div class="status-indicator" id="statusIndicator">온라인 · 대기 중</div>
+          <div class="emotion-badge-box" id="emotionBadgeBox" style="display: none;">
+            <span class="emotion-badge" id="emotionBadge">상태: 기본</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- 대화 스크롤 영역 -->
+      <section class="chat-viewport" id="chatViewport">
+        <div class="chat-message assistant-message" data-msg-id="msg_guide" data-role="assistant" data-raw-content="미노리 시작 가이드">
+          <!-- 상단 헤더 바 (발신자 + 상단 우측 항상 노출 액션 버튼) -->
+          <div class="message-header-bar">
+            <div class="message-sender-tag">
+              <span class="sender-dot"></span>
+              <span class="sender-name">MINORI</span>
+            </div>
+            <div class="message-actions">
+              <button type="button" class="msg-action-btn action-tts-msg" title="가이드 음성 듣기">
+                <svg class="icon-svg-sm" viewBox="0 0 24 24"><path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02z"/></svg>
+              </button>
+              <button type="button" class="msg-action-btn danger action-del-msg" title="가이드 닫기">
+                <svg class="icon-svg-sm" viewBox="0 0 24 24"><path d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"/></svg>
+              </button>
+            </div>
+          </div>
+
+          <!-- White Thought (헤더 아래에 위치하여 절대 겹치지 않음) -->
+          <div class="thought-container collapsed">
+            <div class="thought-header">
+              <span>White Thought (시스템 상태)</span>
+              <span class="toggle-arrow">▶</span>
+            </div>
+            <div class="thought-content">
+[시스템 초기화 완료]
+- 에이전트: MINORI (자율형 개인 디지털 비서)
+- 작업 공간: D:\AIproject 연결 확인됨.
+- 기능: 파일 시스템 I/O 도구, 음성 인식(STT), 음성 합성(TTS), 설정형 모듈 제어
+            </div>
+          </div>
+
+          <!-- 메시지 본문 -->
+          <div class="message-body guide-message-body">
+            <div style="font-size: 14px; font-weight: bold; margin-bottom: 8px; color: #a7f3d0;">
+              안녕하세요, 주인님. 개인 디지털 비서 미노리(MINORI)입니다.
+            </div>
+            <p style="margin-bottom: 12px; color: var(--text-muted); font-size: 12px; line-height: 1.5;">
+              미노리는 단순한 챗봇이 아닌, 로컬 PC 환경을 스스로 탐색하고 작업을 수행하는 자율형 비서입니다.<br>
+              아래 안내를 참고하여 저와 작업을 시작해 보세요.
+            </p>
+            
+            <div class="guide-grid">
+              <div class="guide-card">
+                <div class="guide-badge">1. API 설정</div>
+                <div class="guide-text">
+                  좌측 상단 <b>[설정] 탭 ➔ 고급 설정</b>에서 Google Gemini API 키를 입력하고 <b>[연결 테스트]</b>를 진행해 주세요.
+                </div>
+              </div>
+
+              <div class="guide-card">
+                <div class="guide-badge">2. 음성 대화 (STT/TTS)</div>
+                <div class="guide-text">
+                  하단 입력창 우측의 <b>마이크 버튼</b>을 누르고 말씀하시면 실시간 음성 인식 후 자동 전송됩니다. <b>[TTS 설정]</b>에서 자동 음성 재생을 켤 수 있습니다.
+                </div>
+              </div>
+
+              <div class="guide-card">
+                <div class="guide-badge">3. 자율 도구 실행</div>
+                <div class="guide-text">
+                  로컬 작업 공간에서 다음과 같은 명령을 자연어로 내려보세요:<br>
+                  • <code>"지금 몇 시야?"</code> (시스템 시각 조회)<br>
+                  • <code>"작업 공간에 어떤 파일들이 있어?"</code> (디렉터리 파일 탐색)<br>
+                  • <code>"Test 폴더의 ApiTest.py 내용 요약해줘"</code> (파일 읽기 및 분석)<br>
+                  • <code>"오늘 회의록 양식을 meeting_template.md 파일로 작성해줘"</code> (파일 생성)
+                </div>
+              </div>
+
+              <div class="guide-card">
+                <div class="guide-badge">4. 모듈 및 대화 관리</div>
+                <div class="guide-text">
+                  좌측 사이드바 <b>[모듈 설정]</b> 또는 <b>[설정 ➔ 모듈 관리]</b>에서 원하는 규칙을 직접 추가/편집할 수 있습니다. 각 대화 말풍선 상단 우측의 <b>[편집] [리롤] [삭제]</b> 버튼을 상시 이용할 수 있습니다.
+                </div>
+              </div>
+            </div>
+
+            <div style="margin-top: 12px; font-size: 12px; color: var(--text-accent);">
+              무엇이든 편하게 말씀해 주세요, 주인님.
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- 하단 입력 바 -->
+      <footer class="chat-input-bar">
+        <textarea id="chatInput" placeholder="지시할 내용을 입력하거나 마이크 버튼으로 말씀하세요... (Shift+Enter로 줄바꿈)" rows="1"></textarea>
+        <button type="button" class="btn-voice-input" id="btnVoiceInput" title="음성 인식(STT) 시작/중지">
+          <svg class="icon-svg" viewBox="0 0 24 24"><path d="M12 14c1.66 0 3-1.34 3-3V5c0-1.66-1.34-3-3-3S9 3.34 9 5v6c0 1.66 1.34 3 3 3zm5.3-3c0 3-2.54 5.1-5.3 5.1S6.7 14 6.7 11H5c0 3.41 2.72 6.23 6 6.72V21h2v-3.28c3.28-.48 6-3.3 6-6.72h-1.7z"/></svg>
+        </button>
+        <button id="btnSend" title="전송">
+          <svg class="icon-svg" viewBox="0 0 24 24"><path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/></svg>
+        </button>
+      </footer>
+    </main>
+
+  </div>
+  <script src="app.js?v=2.3"></script>
+</body>
+</html>
