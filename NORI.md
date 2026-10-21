@@ -6,7 +6,7 @@
 
 ![Python](https://img.shields.io/badge/Python-3.10%2B-blue?logo=python)
 ![FastAPI](https://img.shields.io/badge/FastAPI-0.110%2B-009688?logo=fastapi)
-![Google Gemini](https://img.shields.io/badge/Google%20Gemini-2.5%20Flash%20%7C%20Pro-4285F4?logo=google)
+![Google Gemini](https://img.shields.io/badge/Google%20Gemini-3.6%20Flash%20%7C%20Pro-4285F4?logo=google)
 ![Whisper](https://img.shields.io/badge/OpenAI-Whisper%20STT-412991?logo=openai)
 ![Vanilla JS](https://img.shields.io/badge/Frontend-Vanilla%20JS%20%26%20CSS-F7DF1E?logo=javascript)
 ![License](https://img.shields.io/badge/License-MIT-green)
