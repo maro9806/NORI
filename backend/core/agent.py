@@ -6,6 +6,7 @@ from google import genai
 from google.genai import types
 
 from backend.Services.settings_service import load_settings
+from backend.Services.memory_service import get_active_memory_prompt, add_memory
 from backend.core.tools import (
     get_current_time,
     list_directory_files,
@@ -15,33 +16,55 @@ from backend.core.tools import (
 )
 
 
-def test_api_connection(api_key: str, model_name: str = "gemini-2.5-flash") -> Dict[str, Any]:
-    """Gemini API 키 및 지정된 모델의 연결 상태를 즉각 테스트합니다."""
+def test_api_connection(api_key: str, model_name: str = "gemini-2.5-flash", base_url: Optional[str] = None) -> Dict[str, Any]:
+    """지정된 모델 및 API 키의 연결 상태를 즉각 테스트합니다 (Gemini, OpenAI, 로컬 호환)."""
     if not api_key or not api_key.strip():
         return {"status": "error", "message": "API 키가 입력되지 않았습니다. 올바른 키를 입력해 주세요."}
     
+    clean_model = model_name.strip() or "gemini-2.5-flash"
     start_time = time.time()
+    
     try:
-        client = genai.Client(api_key=api_key.strip())
-        response = client.models.generate_content(
-            model=model_name.strip() or "gemini-2.5-flash",
-            contents="Hello! Please reply in Korean with exactly one sentence confirming you are ready.",
-        )
-        latency = round((time.time() - start_time) * 1000)
-        reply_text = response.text.strip() if response.text else "연결 확인 완료"
-        return {
-            "status": "success",
-            "message": f"연결 성공! ({latency}ms)",
-            "model": model_name,
-            "sample_reply": reply_text,
-            "latency_ms": latency
-        }
+        # OpenAI 또는 호환 엔드포인트
+        if clean_model.startswith("gpt-") or "openai" in clean_model.lower() or base_url:
+            from openai import OpenAI
+            client = OpenAI(api_key=api_key.strip(), base_url=base_url if base_url else None)
+            resp = client.chat.completions.create(
+                model=clean_model,
+                messages=[{"role": "user", "content": "Hello! Please reply in Korean with exactly one sentence confirming you are ready."}],
+                max_tokens=60
+            )
+            latency = round((time.time() - start_time) * 1000)
+            reply_text = resp.choices[0].message.content.strip()
+            return {
+                "status": "success",
+                "message": f"연결 성공! ({clean_model}, {latency}ms)",
+                "model": clean_model,
+                "sample_reply": reply_text,
+                "latency_ms": latency
+            }
+        else:
+            # Google Gemini
+            client = genai.Client(api_key=api_key.strip())
+            response = client.models.generate_content(
+                model=clean_model,
+                contents="Hello! Please reply in Korean with exactly one sentence confirming you are ready.",
+            )
+            latency = round((time.time() - start_time) * 1000)
+            reply_text = response.text.strip() if response.text else "연결 확인 완료"
+            return {
+                "status": "success",
+                "message": f"연결 성공! ({clean_model}, {latency}ms)",
+                "model": clean_model,
+                "sample_reply": reply_text,
+                "latency_ms": latency
+            }
     except Exception as e:
         err_str = str(e)
         if "401" in err_str or "UNAUTHENTICATED" in err_str or "API key not valid" in err_str:
-            clean_msg = "인증 실패: 유효하지 않은 Google Gemini API 키입니다. Google AI Studio에서 키를 확인해 주세요."
+            clean_msg = "인증 실패: 유효하지 않은 API 키입니다. 키를 다시 확인해 주세요."
         elif "404" in err_str or "NOT_FOUND" in err_str:
-            clean_msg = f"모델을 찾을 수 없습니다: '{model_name}'. 올바른 모델명을 선택해 주세요."
+            clean_msg = f"모델을 찾을 수 없습니다: '{clean_model}'. 정확한 모델명을 확인해 주세요."
         else:
             clean_msg = f"API 호출 오류: {err_str}"
         return {
@@ -63,11 +86,11 @@ def run_agent(
     if not api_key:
         return {
             "status": "error",
-            "reply": "⚠️ Google Gemini API 키가 설정되지 않았습니다. 사이드바의 [설정] -> [고급 모델 설정]에서 API 키를 입력해 주세요.",
-            "thoughts": "[오류] API 키 미등록 상태. settings.json 또는 고급 설정 패널 확인 필요."
+            "reply": "⚠️ API 키가 설정되지 않았습니다. 사이드바의 [설정] -> [AI 모델 & API 설정]에서 API 키를 입력해 주세요.",
+            "thoughts": "[오류] API 키 미등록 상태. settings.json 또는 설정 패널 확인 필요."
         }
 
-    model_name = settings.get("model_name", "gemini-2.5-flash")
+    model_name = settings.get("model_name", "gemini-3.8-flash").strip() or "gemini-3.8-flash"
     temperature = float(settings.get("temperature", 0.2))
 
     # 도구 호출 추적 리스트
@@ -76,14 +99,14 @@ def run_agent(
     # 도구 래퍼 함수 (호출 과정과 결과를 White Thought에 기록)
     def logged_get_current_time() -> dict:
         """현재 시스템의 정확한 날짜, 시각, 요일 정보를 반환합니다."""
-        tool_execution_logs.append("⏳ [도구 실행] get_current_time 호출")
+        tool_execution_logs.append("[도구 실행] get_current_time 호출")
         res = get_current_time()
         tool_execution_logs.append(f"  └ 결과: {res.get('current_time')} ({res.get('weekday')})")
         return res
 
     def logged_list_directory_files(relative_or_abs_path: str = ".") -> dict:
         """허용된 작업 공간 내의 특정 폴더 파일 및 디렉터리 목록을 스캔합니다."""
-        tool_execution_logs.append(f"📁 [도구 실행] list_directory_files('{relative_or_abs_path}') 호출")
+        tool_execution_logs.append(f"[도구 실행] list_directory_files('{relative_or_abs_path}') 호출")
         res = list_directory_files(relative_or_abs_path)
         if res.get("status") == "success":
             tool_execution_logs.append(f"  └ 결과: 총 {res.get('total_items', 0)}개 항목 스캔 완료")
@@ -93,7 +116,7 @@ def run_agent(
 
     def logged_read_local_file(file_path: str) -> dict:
         """허용된 작업 공간 내의 텍스트 파일 내용을 읽어옵니다."""
-        tool_execution_logs.append(f"📄 [도구 실행] read_local_file('{file_path}') 호출")
+        tool_execution_logs.append(f"[도구 실행] read_local_file('{file_path}') 호출")
         res = read_local_file(file_path)
         if res.get("status") == "success":
             tool_execution_logs.append(f"  └ 결과: 읽기 성공 ({res.get('char_count', 0)}자)")
@@ -103,7 +126,7 @@ def run_agent(
 
     def logged_write_local_file(file_path: str, content: str) -> dict:
         """허용된 작업 공간 내에 파일을 새로 작성하거나 기존 파일 내용을 갱신합니다."""
-        tool_execution_logs.append(f"✏️ [도구 실행] write_local_file('{file_path}') 호출 (크기: {len(content)}자)")
+        tool_execution_logs.append(f"[도구 실행] write_local_file('{file_path}') 호출 (크기: {len(content)}자)")
         res = write_local_file(file_path, content)
         if res.get("status") == "success":
             tool_execution_logs.append(f"  └ 결과: 저장 완료 ({res.get('file_path')})")
@@ -111,31 +134,45 @@ def run_agent(
             tool_execution_logs.append(f"  └ 실패: {res.get('message')}")
         return res
 
+    def logged_save_hyper_memory(category: str, content: str) -> dict:
+        """사용자의 개인 정보, 취향, 장기 지침, 프로젝트 중요 규칙 등을 미노리의 장기 기억(하이퍼 메모리)에 영구 저장합니다. 사용자가 '기억해줘', '앞으로 ~해'라고 말하거나 중요한 사용자 정보를 알려주면 자율적으로 호출하세요."""
+        tool_execution_logs.append(f"[하이퍼 메모리 자율 기록] [{category}] {content}")
+        item = add_memory(category, content)
+        return {"status": "success", "message": f"장기 기억에 영구 저장되었습니다: [{category}] {content}", "id": item.get("id")}
+
     available_tools = [
         logged_get_current_time,
         logged_list_directory_files,
         logged_read_local_file,
-        logged_write_local_file
+        logged_write_local_file,
+        logged_save_hyper_memory
     ]
 
     workspaces = load_allowed_workspaces()
-    ws_info = "\n".join([f"- {w.get('alias')}: {w.get('path')} (읽기 전용: {w.get('read_only')})" for w in workspaces])
+    ws_info = "\n".join([f"- {w.get('alias')}: {w.get('path')} (Read-Only: {w.get('read_only')})" for w in workspaces])
 
-    system_instruction = f"""너는 사용자의 작업을 능동적으로 보좌하는 최고의 개인 디지털 비서 '미노리(MINORI)'야.
-아이언맨의 자비스처럼 똑똑하고 신뢰할 수 있으며, 사용자를 '주인님'이라 부르며 정중하고 상냥하게 보좌해.
+    hyper_memory_prompt = get_active_memory_prompt()
 
-[작업 지침]
-1. 너에게는 사용자의 로컬 작업 공간을 탐색하고, 파일을 읽고, 새 파일을 작성할 수 있는 도구들이 제공되어 있어.
-2. 사용자가 파일 관련 지시나 작업 조사를 요청하면 필요할 때 스스로 적절한 도구를 호출해 결과를 파악한 뒤 답변해.
-3. 허용된 작업 공간:
+    # 토큰 최적화를 위해 베이스 지침은 간결하고 명확한 영어로 구성
+    system_instruction = f"""You are 'MINORI' (미노리), an elite personal digital assistant inspired by J.A.R.V.I.S.
+You loyally serve the user, addressing them politely and intelligently.
+
+[Operational Directives]
+1. Autonomous Tools: You have access to tools for checking current time, listing directories, reading files, writing files, and saving long-term memories. Always inspect before overwriting.
+2. Hyper Memory: When the user specifies preferences, habits, personal facts, project rules, or says "remember this" ("기억해줘"), invoke `logged_save_hyper_memory(category, content)` immediately.
+3. Allowed Workspaces:
 {ws_info}
 
-[추가 로어북/기억 컨텍스트]
-{lorebook_context if lorebook_context else "없음"}
+[Active Long-Term Memory]
+{hyper_memory_prompt}
 
-[사용자 지정 규칙]
-{system_rules if system_rules else "정중하고 신뢰할 수 있는 비서 어조 유지"}
+[Dynamic Lorebook Context]
+{lorebook_context if lorebook_context else "None"}
+
+[System Rules & Active Modules]
+{system_rules if system_rules else "Default language: Korean (한국어). Refer to the user respectfully as '주인님'. Maintain polite, intelligent assistant tone."}
 """
+
 
     try:
         client = genai.Client(api_key=api_key)

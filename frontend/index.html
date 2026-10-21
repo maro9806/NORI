@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>MINORI - Personal Digital Secretary</title>
-  <link rel="stylesheet" href="style.css?v=2.2">
+  <link rel="stylesheet" href="style.css?v=3.2">
 </head>
 <body class="theme-dark">
   <div class="app-layout">
@@ -104,31 +104,187 @@
           <div class="workspace-status" id="workspaceStatusMsg">경로가 유효합니다.</div>
         </div>
       </div>
+    </aside>
 
-      <!-- [VIEW 2] 설정 탭 뷰 -->
-      <div class="sidebar-view" id="settingsView" style="display: none;">
+    <!-- 사이드바 너비 드래그 조절 바 (Resizer Splitter) -->
+    <div class="sidebar-resizer" id="sidebarResizer" title="드래그하여 사이드바 너비 조절"></div>
+
+    <!-- 2. 중앙 메인 대화 영역 -->
+    <main class="main-content">
+      <!-- [VIEW A] 메인 채팅 대화 영역 -->
+      <div class="main-chat-section" id="mainChatSection">
+
+      <!-- 사이드바 접기/펼치기 토글 버튼 -->
+      <button class="sidebar-toggle-btn" id="btnToggleSidebar" title="사이드바 접기">←</button>
+
+      <!-- 미노리 프로필 카드 -->
+      <div class="profile-card">
+        <div class="avatar-box cyber-core-box" id="minoriAvatarBox">
+          <div class="cyber-core" id="cyberCore">
+            <div class="cyber-ring-outer"></div>
+            <div class="cyber-ring-inner"></div>
+            <div class="cyber-core-center"></div>
+          </div>
+        </div>
+        <div class="profile-info">
+          <div class="profile-name">MINORI (디지털 비서)</div>
+          <div class="status-indicator" id="statusIndicator">온라인 · 대기 중</div>
+          <div class="emotion-badge-box" id="emotionBadgeBox" style="display: none;">
+            <span class="emotion-badge" id="emotionBadge">상태: 기본</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- 대화 스크롤 영역 -->
+      <section class="chat-viewport" id="chatViewport">
+        <div class="chat-message assistant-message" data-msg-id="msg_guide" data-role="assistant" data-raw-content="미노리 시작 가이드">
+          <!-- 상단 헤더 바 (발신자 + 상단 우측 항상 노출 액션 버튼) -->
+          <div class="message-header-bar">
+            <div class="message-sender-tag">
+              <span class="sender-dot"></span>
+              <span class="sender-name">MINORI</span>
+            </div>
+            <div class="message-actions">
+              <button type="button" class="msg-action-btn action-tts-msg" title="가이드 음성 듣기">
+                <svg class="icon-svg-sm" viewBox="0 0 24 24"><path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02z"/></svg>
+              </button>
+              <button type="button" class="msg-action-btn danger action-del-msg" title="가이드 닫기">
+                <svg class="icon-svg-sm" viewBox="0 0 24 24"><path d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"/></svg>
+              </button>
+            </div>
+          </div>
+
+          <!-- White Thought (헤더 아래에 위치하여 절대 겹치지 않음) -->
+          <div class="thought-container collapsed">
+            <div class="thought-header">
+              <span>White Thought (시스템 상태)</span>
+              <span class="toggle-arrow">▶</span>
+            </div>
+            <div class="thought-content">
+[시스템 초기화 완료]
+- 에이전트: MINORI (자율형 개인 디지털 비서)
+- 작업 공간: D:\AIproject 연결 확인됨.
+- 기능: 파일 시스템 I/O 도구, 음성 인식(STT), 음성 합성(TTS), 설정형 모듈 제어
+            </div>
+          </div>
+
+          <!-- 메시지 본문 -->
+          <div class="message-body guide-message-body">
+            <div style="font-size: 14px; font-weight: bold; margin-bottom: 8px; color: #a7f3d0;">
+              안녕하세요, 주인님. 개인 디지털 비서 미노리(MINORI)입니다.
+            </div>
+            <p style="margin-bottom: 12px; color: var(--text-muted); font-size: 12px; line-height: 1.5;">
+              미노리는 단순한 챗봇이 아닌, 로컬 PC 환경을 스스로 탐색하고 작업을 수행하는 자율형 비서입니다.<br>
+              아래 안내를 참고하여 저와 작업을 시작해 보세요.
+            </p>
+            
+            <div class="guide-grid">
+              <div class="guide-card">
+                <div class="guide-badge">1. API 설정</div>
+                <div class="guide-text">
+                  좌측 상단 <b>[설정] 탭 ➔ 고급 설정</b>에서 Google Gemini API 키를 입력하고 <b>[연결 테스트]</b>를 진행해 주세요.
+                </div>
+              </div>
+
+              <div class="guide-card">
+                <div class="guide-badge">2. 음성 대화 (STT/TTS)</div>
+                <div class="guide-text">
+                  하단 입력창 우측의 <b>마이크 버튼</b>을 누르고 말씀하시면 실시간 음성 인식 후 자동 전송됩니다. <b>[TTS 설정]</b>에서 자동 음성 재생을 켤 수 있습니다.
+                </div>
+              </div>
+
+              <div class="guide-card">
+                <div class="guide-badge">3. 자율 도구 실행</div>
+                <div class="guide-text">
+                  로컬 작업 공간에서 다음과 같은 명령을 자연어로 내려보세요:<br>
+                  • <code>"지금 몇 시야?"</code> (시스템 시각 조회)<br>
+                  • <code>"작업 공간에 어떤 파일들이 있어?"</code> (디렉터리 파일 탐색)<br>
+                  • <code>"Test 폴더의 ApiTest.py 내용 요약해줘"</code> (파일 읽기 및 분석)<br>
+                  • <code>"오늘 회의록 양식을 meeting_template.md 파일로 작성해줘"</code> (파일 생성)
+                </div>
+              </div>
+
+              <div class="guide-card">
+                <div class="guide-badge">4. 모듈 및 대화 관리</div>
+                <div class="guide-text">
+                  좌측 사이드바 <b>[모듈 설정]</b> 또는 <b>[설정 ➔ 모듈 관리]</b>에서 원하는 규칙을 직접 추가/편집할 수 있습니다. 각 대화 말풍선 상단 우측의 <b>[편집] [리롤] [삭제]</b> 버튼을 상시 이용할 수 있습니다.
+                </div>
+              </div>
+            </div>
+
+            <div style="margin-top: 12px; font-size: 12px; color: var(--text-accent);">
+              무엇이든 편하게 말씀해 주세요, 주인님.
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- 하단 입력 바 -->
+      <footer class="chat-input-bar">
+        <textarea id="chatInput" placeholder="지시할 내용을 입력하거나 마이크 버튼으로 말씀하세요... (Shift+Enter로 줄바꿈)" rows="1"></textarea>
+        <button type="button" class="btn-voice-input" id="btnVoiceInput" title="음성 인식(STT) 시작/중지">
+          <svg class="icon-svg" viewBox="0 0 24 24"><path d="M12 14c1.66 0 3-1.34 3-3V5c0-1.66-1.34-3-3-3S9 3.34 9 5v6c0 1.66 1.34 3 3 3zm5.3-3c0 3-2.54 5.1-5.3 5.1S6.7 14 6.7 11H5c0 3.41 2.72 6.23 6 6.72V21h2v-3.28c3.28-.48 6-3.3 6-6.72h-1.7z"/></svg>
+        </button>
+        <button id="btnSend" title="전송">
+          <svg class="icon-svg" viewBox="0 0 24 24"><path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/></svg>
+        </button>
+      </footer>
+      </div>
+
+      <!-- [VIEW B] 메인 설정 대시보드 (사이드바가 아닌 넓은 메인 화면에서 쾌적하게 관리) -->
+      <div class="main-settings-section" id="mainSettingsSection" style="display: none;">
         
-        <!-- 6대 기능 아이콘 바 (모노크롬 SVG 벡터 아이콘) -->
-        <div class="icon-nav-bar">
-          <button class="nav-icon-btn active" title="로어북" data-target="lorebook">
-            <svg class="icon-svg" viewBox="0 0 24 24"><path d="M18 2H6c-1.1 0-2 .9-2 2v16c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zM6 4h5v8l-2.5-1.5L6 12V4z"/></svg>
-          </button>
-          <button class="nav-icon-btn" title="모듈 설정" data-target="modules">
-            <svg class="icon-svg" viewBox="0 0 24 24"><path d="M4 8h4V4H4v4zm6 12h4v-4h-4v4zm-6 0h4v-4H4v4zm0-6h4v-4H4v4zm6 0h4v-4h-4v4zm6-10v4h4V4h-4zm-6 4h4V4h-4v4zm6 6h4v-4h-4v4zm0 6h4v-4h-4v4z"/></svg>
-          </button>
-          <button class="nav-icon-btn" title="TTS 설정" data-target="tts">
-            <svg class="icon-svg" viewBox="0 0 24 24"><path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02zM14 3.23v2.06c2.89.86 5 3.54 5 6.71s-2.11 5.85-5 6.71v2.06c4.01-.91 7-4.49 7-8.77s-2.99-7.86-7-8.77z"/></svg>
-          </button>
-          <button class="nav-icon-btn" title="정규식 스크립트" data-target="script">
-            <svg class="icon-svg" viewBox="0 0 24 24"><path d="M9.4 16.6L4.8 12l4.6-4.6L8 6l-6 6 6 6 1.4-1.4zm5.2 0l4.6-4.6-4.6-4.6L16 6l6 6-6 6-1.4-1.4z"/></svg>
-          </button>
-          <button class="nav-icon-btn" title="AI 모델 & API 설정" data-target="advanced">
-            <svg class="icon-svg" viewBox="0 0 24 24"><path d="M19.14 12.94c.04-.3.06-.61.06-.94 0-.32-.02-.64-.07-.94l2.03-1.58c.18-.14.23-.41.12-.61l-1.92-3.32c-.12-.22-.37-.29-.59-.22l-2.39.96c-.5-.38-1.03-.7-1.62-.94l-.36-2.54c-.04-.24-.24-.41-.48-.41h-3.84c-.24 0-.43.17-.47.41l-.36 2.54c-.59.24-1.13.57-1.62.94l-2.39-.96c-.22-.08-.47 0-.59.22L2.74 8.87c-.12.21-.08.47.12.61l2.03 1.58c-.05.3-.09.63-.09.94s.02.64.07.94l-2.03 1.58c-.18.14-.23.41-.12.61l1.92 3.32c.12.22.37.29.59.22l2.39-.96c.5.38 1.03.7 1.62.94l.36 2.54c.05.24.24.41.48.41h3.84c.24 0 .44-.17.47-.41l.36-2.54c.59-.24 1.13-.56 1.62-.94l2.39.96c.22.08.47 0 .59-.22l1.92-3.32c.12-.22.07-.47-.12-.61l-2.01-1.58zM12 15.6c-1.98 0-3.6-1.62-3.6-3.6s1.62-3.6 3.6-3.6 3.6 1.62 3.6 3.6-1.62 3.6-3.6 3.6z"/></svg>
-          </button>
-          <button class="nav-icon-btn danger" title="데이터 초기화" data-target="delete">
-            <svg class="icon-svg" viewBox="0 0 24 24"><path d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"/></svg>
+        <!-- 설정 메인 상단 헤더 -->
+        <div class="settings-main-header">
+          <div class="settings-title-group">
+            <span class="settings-main-title">
+              <svg class="icon-svg" viewBox="0 0 24 24" style="width: 18px; height: 18px; fill: var(--text-accent);"><path d="M19.14 12.94c.04-.3.06-.61.06-.94 0-.32-.02-.64-.07-.94l2.03-1.58c.18-.14.23-.41.12-.61l-1.92-3.32c-.12-.22-.37-.29-.59-.22l-2.39.96c-.5-.38-1.03-.7-1.62-.94l-.36-2.54c-.04-.24-.24-.41-.48-.41h-3.84c-.24 0-.43.17-.47.41l-.36 2.54c-.59.24-1.13.57-1.62.94l-2.39-.96c-.22-.08-.47 0-.59.22L2.74 8.87c-.12.21-.08.47.12.61l2.03 1.58c-.05.3-.09.63-.09.94s.02.64.07.94l-2.03 1.58c-.18.14-.23.41-.12.61l1.92 3.32c.12.22.37.29.59.22l2.39-.96c.5.38 1.03.7 1.62.94l.36 2.54c.05.24.24.41.48.41h3.84c.24 0 .44-.17.47-.41l.36-2.54c.59-.24 1.13-.56 1.62-.94l2.39.96c.22.08.47 0 .59-.22l1.92-3.32c.12-.22.07-.47-.12-.61l-2.01-1.58zM12 15.6c-1.98 0-3.6-1.62-3.6-3.6s1.62-3.6 3.6-3.6 3.6 1.62 3.6 3.6-1.62 3.6-3.6 3.6z"/></svg>
+              미노리 환경 설정 대시보드
+            </span>
+            <span class="settings-sub-title">모듈 규칙, 로어북, 음성 엔진(STT/TTS), AI 파라미터를 넓은 화면에서 직관적으로 관리하세요.</span>
+          </div>
+          <button class="btn-solid-secondary" id="btnCloseSettings" title="대화 화면으로 복귀">
+            <span>✕ 대화로 돌아가기</span>
           </button>
         </div>
+
+        <!-- 6대 카테고리 가로 네비게이션 탭 바 -->
+        <div class="settings-category-bar">
+          <button class="settings-cat-btn active" data-target="advanced">
+            <svg class="icon-svg" viewBox="0 0 24 24"><path d="M19.14 12.94c.04-.3.06-.61.06-.94 0-.32-.02-.64-.07-.94l2.03-1.58c.18-.14.23-.41.12-.61l-1.92-3.32c-.12-.22-.37-.29-.59-.22l-2.39.96c-.5-.38-1.03-.7-1.62-.94l-.36-2.54c-.04-.24-.24-.41-.48-.41h-3.84c-.24 0-.43.17-.47.41l-.36 2.54c-.59.24-1.13.57-1.62.94l-2.39-.96c-.22-.08-.47 0-.59.22L2.74 8.87c-.12.21-.08.47.12.61l2.03 1.58c-.05.3-.09.63-.09.94s.02.64.07.94l-2.03 1.58c-.18.14-.23.41-.12.61l1.92 3.32c.12.22.37.29.59.22l2.39-.96c.5.38 1.03.7 1.62.94l.36 2.54c.05.24.24.41.48.41h3.84c.24 0 .44-.17.47-.41l.36-2.54c.59-.24 1.13-.56 1.62-.94l2.39.96c.22.08.47 0 .59-.22l1.92-3.32c.12-.22.07-.47-.12-.61l-2.01-1.58zM12 15.6c-1.98 0-3.6-1.62-3.6-3.6s1.62-3.6 3.6-3.6 3.6 1.62 3.6 3.6-1.62 3.6-3.6 3.6z"/></svg>
+            <span>AI 모델 & API 설정</span>
+          </button>
+          <button class="settings-cat-btn" data-target="tts">
+            <svg class="icon-svg" viewBox="0 0 24 24"><path d="M12 14c1.66 0 3-1.34 3-3V5c0-1.66-1.34-3-3-3S9 3.34 9 5v6c0 1.66 1.34 3 3 3zm5.3-3c0 3-2.54 5.1-5.3 5.1S6.7 14 6.7 11H5c0 3.41 2.72 6.23 6 6.72V21h2v-3.28c3.28-.48 6-3.3 6-6.72h-1.7z"/></svg>
+            <span>음성 (STT / TTS) 설정</span>
+          </button>
+          <button class="settings-cat-btn" data-target="modules">
+            <svg class="icon-svg" viewBox="0 0 24 24"><path d="M4 8h4V4H4v4zm6 12h4v-4h-4v4zm-6 0h4v-4H4v4zm0-6h4v-4H4v4zm6 0h4v-4h-4v4zm6-10v4h4V4h-4zm-6 4h4V4h-4v4zm6 6h4v-4h-4v4zm0 6h4v-4h-4v4z"/></svg>
+            <span>모듈 설정 & 규칙</span>
+          </button>
+          <button class="settings-cat-btn" data-target="lorebook">
+            <svg class="icon-svg" viewBox="0 0 24 24"><path d="M18 2H6c-1.1 0-2 .9-2 2v16c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zM6 4h5v8l-2.5-1.5L6 12V4z"/></svg>
+            <span>로어북 (Lorebook)</span>
+          </button>
+          <button class="settings-cat-btn" data-target="memory">
+            <svg class="icon-svg" viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 17.93c-3.95-.49-7-3.85-7-7.93 0-.62.08-1.21.21-1.79L9 15v1c0 1.1.9 2 2 2v1.93zm6.9-2.54c-.26-.81-1-1.39-1.9-1.39h-1v-3c0-.55-.45-1-1-1H8v-2h2c.55 0 1-.45 1-1V7h2c1.1 0 2-.9 2-2v-.41c2.93 1.19 5 4.06 5 7.41 0 2.08-.8 3.97-2.1 5.39z"/></svg>
+            <span>하이퍼 메모리 (장기 기억)</span>
+          </button>
+          <button class="settings-cat-btn" data-target="script">
+            <svg class="icon-svg" viewBox="0 0 24 24"><path d="M9.4 16.6L4.8 12l4.6-4.6L8 6l-6 6 6 6 1.4-1.4zm5.2 0l4.6-4.6-4.6-4.6L16 6l6 6-6 6-1.4-1.4z"/></svg>
+            <span>정규식 & 트리거 스크립트</span>
+          </button>
+          <button class="settings-cat-btn danger" data-target="delete">
+            <svg class="icon-svg" viewBox="0 0 24 24"><path d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"/></svg>
+            <span>데이터 초기화</span>
+          </button>
+        </div>
+
+        <!-- 설정 서브패널 컨테이너 (넓은 뷰포트) -->
+        <div class="settings-content-viewport" id="settingsContentViewport">
+
+        
+        
 
         <!-- [SUB-PANEL: 모듈 설정 패널] (로어북과 동일한 카드 에디터 구조) -->
         <div class="sub-panel" id="modulesPanel" style="display: none;">
@@ -340,6 +496,47 @@
           <div class="panel-title">TTS 음성 설정</div>
 
           <div class="tts-container">
+
+            <!-- 1. STT (음성 인식) 고정밀 설정 카드 -->
+            <div class="card tts-card" style="margin-bottom: 12px;">
+              <div class="card-header" style="display: flex; justify-content: space-between; align-items: center;">
+                <span>STT (음성 인식) 엔진 확장 설정</span>
+                <span style="font-size: 10px; color: var(--text-accent); background: rgba(122, 162, 247, 0.15); padding: 2px 6px; border-radius: 4px;">정확도 향상 모드</span>
+              </div>
+              <div class="field-group">
+                <label class="field-label-sm">STT 엔진 선택</label>
+                <select id="sttProviderSelect" class="dark-input">
+                  <option value="webspeech" selected>Web Speech API (로컬 브라우저 내장 / 실시간 오인식 자동 교정 탑재 / 무료)</option>
+                  <option value="gemini">Google Gemini 2.5 Flash Audio STT (고정밀 / 미노리 인지 / 음향 왜곡 방지)</option>
+                  <option value="whisper">OpenAI Whisper-1 (고정밀 단어 힌트 프롬프트 지원)</option>
+                </select>
+              </div>
+
+              <div class="field-group">
+                <div class="label-with-help">
+                  <label for="sttPromptInput">STT 고유명사 힌트 키워드 (Prompt Keywords)</label>
+                  <span class="help-icon" title="인식 엔진에 힌트로 전달하여 고유명사 정확도를 극대화합니다.">?</span>
+                </div>
+                <input type="text" id="sttPromptInput" class="dark-input" value="미노리, MINORI, 자비스, 인공지능 비서" placeholder="예: 미노리, MINORI, 자비스">
+                <span class="field-hint" style="font-size: 10px; color: var(--text-muted); margin-top: 2px;">
+                  * '미노리'를 며느리, 미누리 등으로 잘못 인식하는 문제를 방지하기 위해 음향 힌트를 주입합니다.
+                </span>
+              </div>
+
+              <div class="field-group" id="sttOpenAiKeyGroup" style="display: none;">
+                <label class="field-label-sm">OpenAI API Key (Whisper 전용)</label>
+                <input type="password" id="sttOpenAiKeyInput" class="dark-input" placeholder="sk-..." autocomplete="off">
+              </div>
+
+              <div class="checkbox-group" style="margin-top: 4px;">
+                <label class="custom-checkbox">
+                  <input type="checkbox" id="sttAutoSendCheck" checked>
+                  <span class="checkmark"></span>
+                  <span class="check-text">발화 종료 및 침묵 감지 시 자동으로 메시지 전송</span>
+                </label>
+              </div>
+            </div>
+
             <div class="card tts-card">
               <div class="card-header">TTS 서비스 제공자</div>
               <div class="field-group">
@@ -512,25 +709,53 @@
               </span>
             </div>
 
-            <!-- Model Selection -->
-            <div class="field-group">
-              <div class="label-with-help">
-                <label for="geminiModelSelect">Gemini 모델</label>
-                <span class="help-icon" title="비서 에이전트가 사용할 기본 모델입니다.">?</span>
+            <!-- Active Working Model Badge -->
+            <div class="active-model-card" style="display: flex; align-items: center; justify-content: space-between; padding: 10px 14px; background: rgba(30, 41, 59, 0.7); border: 1px solid var(--border-color); border-radius: 6px;">
+              <div>
+                <span style="font-size: 11px; color: var(--text-muted); display: block;">현재 적용된 AI 모델</span>
+                <strong id="activeModelBadge" style="font-size: 13px; color: var(--primary); font-family: monospace;">gemini-3.8-flash</strong>
               </div>
-              <select id="geminiModelSelect" class="dark-input">
-                <option value="gemini-2.5-flash" selected>gemini-2.5-flash (빠르고 스마트한 표준 추천)</option>
-                <option value="gemini-2.5-pro">gemini-2.5-pro (고급 코딩 및 심층 추론)</option>
-                <option value="gemini-3.8-flash">gemini-3.8-flash (차세대 고속 플래시)</option>
-                <option value="gemini-3.1-pro-preview">gemini-3.1-pro-preview (연구/복합 추론)</option>
-                <option value="custom">사용자 지정 모델 직접 입력</option>
-              </select>
+              <span class="active-status-tag" style="font-size: 10px; background: rgba(16, 185, 129, 0.2); color: #10b981; border: 1px solid #10b981; padding: 3px 8px; border-radius: 12px; font-weight: 600;">ACTIVE</span>
             </div>
 
-            <!-- Custom Model Input (if selected custom) -->
-            <div class="field-group" id="customModelGroup" style="display: none;">
-              <label class="field-label-sm">사용자 지정 모델 ID</label>
-              <input type="text" id="customModelInput" class="dark-input" placeholder="예: gemini-2.5-flash">
+            <!-- Custom Model Input (자유 입력창) -->
+            <div class="field-group">
+              <div class="label-with-help">
+                <label for="modelNameInput">AI 모델명 (자유 직접 입력)</label>
+                <span class="help-icon" title="API 모델 목록은 수시로 바뀌므로 원하는 최신 모델(Gemini 4 Argon, 3.8/3.6 Flash, OpenAI gpt-4o, Claude, Ollama 등)을 자유롭게 직접 입력하세요.">?</span>
+              </div>
+              <input type="text" id="modelNameInput" class="dark-input" placeholder="예: gemini-4-argon, gemini-3.8-flash, gemini-3.6-flash, gpt-4o" style="font-family: monospace; font-size: 12px;" value="gemini-3.8-flash">
+            </div>
+
+            <!-- Working Preset Chips (현재 검증된 모델 안내 및 클릭 시 자동 완성) -->
+            <div class="field-group">
+              <label class="field-label-sm" style="margin-bottom: 6px; color: var(--text-muted);">현재 정상 동작 확인된 모델 프리셋 (클릭 시 자동 입력)</label>
+              <div class="model-preset-chips" id="modelPresetChips">
+                <button type="button" class="preset-chip" data-model="gemini-4-argon">🌟 gemini-4-argon (플래그십 아르곤)</button>
+                <button type="button" class="preset-chip active" data-model="gemini-3.8-flash">⚡ gemini-3.8-flash (고속 플래시 추천)</button>
+                <button type="button" class="preset-chip" data-model="gemini-3.6-flash">✨ gemini-3.6-flash (안정 표준)</button>
+                <button type="button" class="preset-chip" data-model="gpt-4o">🟢 gpt-4o (OpenAI)</button>
+                <button type="button" class="preset-chip" data-model="gpt-4o-mini">🟢 gpt-4o-mini (경량 OpenAI)</button>
+                <button type="button" class="preset-chip" data-model="claude-3-5-sonnet">🟣 claude-3-5-sonnet (Claude)</button>
+                <button type="button" class="preset-chip" data-model="ollama">🦙 Ollama / 로컬 LLM</button>
+              </div>
+            </div>
+
+            <!-- Optional Custom Endpoint / OpenAI Key for multi-provider -->
+            <div class="field-group" style="padding-top: 4px; border-top: 1px dashed var(--border-color); margin-top: 4px;">
+              <div class="label-with-help">
+                <label for="openaiApiKeyInput">OpenAI API Key (선택 사항: gpt-4o 등 사용 시)</label>
+                <span class="help-icon" title="OpenAI 모델 사용 시 필요합니다. Google Gemini만 사용하는 경우 비워두세요.">?</span>
+              </div>
+              <input type="password" id="openaiApiKeyInput" class="dark-input" placeholder="sk-..." autocomplete="off">
+            </div>
+
+            <div class="field-group">
+              <div class="label-with-help">
+                <label for="customEndpointInput">커스텀 Base URL / 엔드포인트 (선택 사항)</label>
+                <span class="help-icon" title="로컬 Ollama(http://localhost:11434/v1)나 프록시 엔드포인트 사용 시 입력합니다.">?</span>
+              </div>
+              <input type="text" id="customEndpointInput" class="dark-input" placeholder="예: http://localhost:11434/v1 (기본 비워둠)">
             </div>
 
             <!-- Temperature Slider -->
@@ -564,6 +789,47 @@
           </div>
         </div>
 
+        <!-- [SUB-PANEL: 하이퍼 메모리 (장기 기억)] -->
+        <div class="sub-panel" id="memoryPanel" style="display: none;">
+          <div class="panel-title-area" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+            <div>
+              <div class="panel-title" style="margin-bottom: 2px;">🧠 하이퍼 메모리 (Hyper Memory Engine)</div>
+              <p style="font-size: 11px; color: var(--text-muted); margin: 0;">미노리가 대화 속에서 자율적으로 기억한 장기 기억 및 사용자 지침입니다. 프롬프트에 자동 주입되어 영구 유지됩니다.</p>
+            </div>
+            <button class="btn-solid-secondary btn-sm" id="btnRefreshMemories" title="기억 새로고침" style="padding: 6px 12px;">
+              <svg class="icon-svg-sm" viewBox="0 0 24 24"><path d="M17.65 6.35C16.2 4.9 14.21 4 12 4c-4.42 0-7.99 3.58-7.99 8s3.57 8 7.99 8c3.73 0 6.84-2.55 7.73-6h-2.08c-.82 2.33-3.04 4-5.65 4-3.31 0-6-2.69-6-6s2.69-6 6-6c1.66 0 3.14.69 4.22 1.78L13 11h7V4l-2.35 2.35z"/></svg>
+              <span>새로고침</span>
+            </button>
+          </div>
+
+          <!-- 신규 기억 수동 등록 카드 -->
+          <div class="card" style="margin-bottom: 14px; padding: 12px; background: rgba(30, 41, 59, 0.4); border: 1px solid var(--border-color); border-radius: 6px;">
+            <div style="font-size: 11px; font-weight: 700; color: var(--text-main); margin-bottom: 8px;">새 장기 기억 직접 등록</div>
+            <div style="display: flex; gap: 8px; margin-bottom: 8px; flex-wrap: wrap;">
+              <select id="memCatSelect" class="dark-input" style="width: 140px; font-size: 11px;">
+                <option value="비서 지침">비서 지침</option>
+                <option value="사용자 성향">사용자 성향</option>
+                <option value="작업 환경">작업 환경</option>
+                <option value="프로젝트 규칙">프로젝트 규칙</option>
+                <option value="중요 메모">중요 메모</option>
+              </select>
+              <input type="text" id="memContentInput" class="dark-input" placeholder="예: '주인님은 백엔드로 FastAPI를 선호하며 비동기 구조를 중시함'" style="flex: 1; min-width: 200px; font-size: 11px;">
+              <button class="btn-solid-primary btn-sm" id="btnAddMemory" style="white-space: nowrap; padding: 6px 14px;">
+                <svg class="icon-svg-sm" viewBox="0 0 24 24"><path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/></svg>
+                <span>기억 저장</span>
+              </button>
+            </div>
+            <span style="font-size: 10px; color: var(--text-muted); display: block;">
+              * 사용자가 대화창에서 "이것 기억해줘"라고 말해도 미노리가 자율 도구(<code>logged_save_hyper_memory</code>)를 호출하여 여기에 스스로 저장합니다.
+            </span>
+          </div>
+
+          <!-- 기억 목록 컨테이너 -->
+          <div id="hyperMemoryList" class="memory-list-container" style="display: flex; flex-direction: column; gap: 8px;">
+            <!-- JS 동적 렌더링 -->
+          </div>
+        </div>
+
         <!-- [SUB-PANEL 5] 공유 및 삭제 패널 -->
         <div class="sub-panel" id="deletePanel" style="display: none;">
           <div class="panel-title">데이터 초기화</div>
@@ -575,129 +841,14 @@
           </div>
         </div>
 
-      </div>
-    </aside>
-
-    <!-- 2. 중앙 메인 대화 영역 -->
-    <main class="main-content">
-      <!-- 사이드바 접기/펼치기 토글 버튼 -->
-      <button class="sidebar-toggle-btn" id="btnToggleSidebar" title="사이드바 접기">←</button>
-
-      <!-- 미노리 프로필 카드 -->
-      <div class="profile-card">
-        <div class="avatar-box cyber-core-box" id="minoriAvatarBox">
-          <div class="cyber-core" id="cyberCore">
-            <div class="cyber-ring-outer"></div>
-            <div class="cyber-ring-inner"></div>
-            <div class="cyber-core-center"></div>
-          </div>
+      
         </div>
-        <div class="profile-info">
-          <div class="profile-name">MINORI (디지털 비서)</div>
-          <div class="status-indicator" id="statusIndicator">온라인 · 대기 중</div>
-          <div class="emotion-badge-box" id="emotionBadgeBox" style="display: none;">
-            <span class="emotion-badge" id="emotionBadge">상태: 기본</span>
-          </div>
-        </div>
+
       </div>
 
-      <!-- 대화 스크롤 영역 -->
-      <section class="chat-viewport" id="chatViewport">
-        <div class="chat-message assistant-message" data-msg-id="msg_guide" data-role="assistant" data-raw-content="미노리 시작 가이드">
-          <!-- 상단 헤더 바 (발신자 + 상단 우측 항상 노출 액션 버튼) -->
-          <div class="message-header-bar">
-            <div class="message-sender-tag">
-              <span class="sender-dot"></span>
-              <span class="sender-name">MINORI</span>
-            </div>
-            <div class="message-actions">
-              <button type="button" class="msg-action-btn action-tts-msg" title="가이드 음성 듣기">
-                <svg class="icon-svg-sm" viewBox="0 0 24 24"><path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02z"/></svg>
-              </button>
-              <button type="button" class="msg-action-btn danger action-del-msg" title="가이드 닫기">
-                <svg class="icon-svg-sm" viewBox="0 0 24 24"><path d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"/></svg>
-              </button>
-            </div>
-          </div>
-
-          <!-- White Thought (헤더 아래에 위치하여 절대 겹치지 않음) -->
-          <div class="thought-container collapsed">
-            <div class="thought-header">
-              <span>White Thought (시스템 상태)</span>
-              <span class="toggle-arrow">▶</span>
-            </div>
-            <div class="thought-content">
-[시스템 초기화 완료]
-- 에이전트: MINORI (자율형 개인 디지털 비서)
-- 작업 공간: D:\AIproject 연결 확인됨.
-- 기능: 파일 시스템 I/O 도구, 음성 인식(STT), 음성 합성(TTS), 설정형 모듈 제어
-            </div>
-          </div>
-
-          <!-- 메시지 본문 -->
-          <div class="message-body guide-message-body">
-            <div style="font-size: 14px; font-weight: bold; margin-bottom: 8px; color: #a7f3d0;">
-              안녕하세요, 주인님. 개인 디지털 비서 미노리(MINORI)입니다.
-            </div>
-            <p style="margin-bottom: 12px; color: var(--text-muted); font-size: 12px; line-height: 1.5;">
-              미노리는 단순한 챗봇이 아닌, 로컬 PC 환경을 스스로 탐색하고 작업을 수행하는 자율형 비서입니다.<br>
-              아래 안내를 참고하여 저와 작업을 시작해 보세요.
-            </p>
-            
-            <div class="guide-grid">
-              <div class="guide-card">
-                <div class="guide-badge">1. API 설정</div>
-                <div class="guide-text">
-                  좌측 상단 <b>[설정] 탭 ➔ 고급 설정</b>에서 Google Gemini API 키를 입력하고 <b>[연결 테스트]</b>를 진행해 주세요.
-                </div>
-              </div>
-
-              <div class="guide-card">
-                <div class="guide-badge">2. 음성 대화 (STT/TTS)</div>
-                <div class="guide-text">
-                  하단 입력창 우측의 <b>마이크 버튼</b>을 누르고 말씀하시면 실시간 음성 인식 후 자동 전송됩니다. <b>[TTS 설정]</b>에서 자동 음성 재생을 켤 수 있습니다.
-                </div>
-              </div>
-
-              <div class="guide-card">
-                <div class="guide-badge">3. 자율 도구 실행</div>
-                <div class="guide-text">
-                  로컬 작업 공간에서 다음과 같은 명령을 자연어로 내려보세요:<br>
-                  • <code>"지금 몇 시야?"</code> (시스템 시각 조회)<br>
-                  • <code>"작업 공간에 어떤 파일들이 있어?"</code> (디렉터리 파일 탐색)<br>
-                  • <code>"Test 폴더의 ApiTest.py 내용 요약해줘"</code> (파일 읽기 및 분석)<br>
-                  • <code>"오늘 회의록 양식을 meeting_template.md 파일로 작성해줘"</code> (파일 생성)
-                </div>
-              </div>
-
-              <div class="guide-card">
-                <div class="guide-badge">4. 모듈 및 대화 관리</div>
-                <div class="guide-text">
-                  좌측 사이드바 <b>[모듈 설정]</b> 또는 <b>[설정 ➔ 모듈 관리]</b>에서 원하는 규칙을 직접 추가/편집할 수 있습니다. 각 대화 말풍선 상단 우측의 <b>[편집] [리롤] [삭제]</b> 버튼을 상시 이용할 수 있습니다.
-                </div>
-              </div>
-            </div>
-
-            <div style="margin-top: 12px; font-size: 12px; color: var(--text-accent);">
-              무엇이든 편하게 말씀해 주세요, 주인님.
-            </div>
-          </div>
-        </div>
-      </section>
-
-      <!-- 하단 입력 바 -->
-      <footer class="chat-input-bar">
-        <textarea id="chatInput" placeholder="지시할 내용을 입력하거나 마이크 버튼으로 말씀하세요... (Shift+Enter로 줄바꿈)" rows="1"></textarea>
-        <button type="button" class="btn-voice-input" id="btnVoiceInput" title="음성 인식(STT) 시작/중지">
-          <svg class="icon-svg" viewBox="0 0 24 24"><path d="M12 14c1.66 0 3-1.34 3-3V5c0-1.66-1.34-3-3-3S9 3.34 9 5v6c0 1.66 1.34 3 3 3zm5.3-3c0 3-2.54 5.1-5.3 5.1S6.7 14 6.7 11H5c0 3.41 2.72 6.23 6 6.72V21h2v-3.28c3.28-.48 6-3.3 6-6.72h-1.7z"/></svg>
-        </button>
-        <button id="btnSend" title="전송">
-          <svg class="icon-svg" viewBox="0 0 24 24"><path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/></svg>
-        </button>
-      </footer>
     </main>
 
   </div>
-  <script src="app.js?v=2.3"></script>
+  <script src="app.js?v=3.2"></script>
 </body>
 </html>

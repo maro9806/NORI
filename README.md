@@ -6,7 +6,7 @@
 
 ![Python](https://img.shields.io/badge/Python-3.10%2B-blue?logo=python)
 ![FastAPI](https://img.shields.io/badge/FastAPI-0.110%2B-009688?logo=fastapi)
-![Google Gemini](https://img.shields.io/badge/Google%20Gemini-3.6%20Flash%20%7C%20Pro-4285F4?logo=google)
+![Google Gemini](https://img.shields.io/badge/Google%20Gemini-2.5%20Flash%20%7C%20Pro-4285F4?logo=google)
 ![Whisper](https://img.shields.io/badge/OpenAI-Whisper%20STT-412991?logo=openai)
 ![Vanilla JS](https://img.shields.io/badge/Frontend-Vanilla%20JS%20%26%20CSS-F7DF1E?logo=javascript)
 ![License](https://img.shields.io/badge/License-MIT-green)
@@ -15,36 +15,34 @@
 
 ---
 
-## 프로젝트 소개 (Overview)
+## 💡 프로젝트 소개 (Overview)
 
-**MINORI(미노리)**는 웹 브라우저 안에서 단순한 질의응답만 반복하는 일반적인 챗봇의 한계를 넘어서 
-**사용자의 로컬 PC 환경을 직접 인지하고, 음성으로 대화하며, 자율적으로 도구(Tools)를 실행하여 작업을 대신 완수하는 지능형 AI 비서 시스템**으로 만들고자 합니다.
+**MINORI(미노리)**는 웹 브라우저 안에서 단순한 질의응답만 반복하는 일반적인 챗봇의 한계를 넘어, **사용자의 로컬 PC 환경을 직접 인지하고, 음성으로 대화하며, 자율적으로 도구(Tools)를 실행하여 작업을 대신 완수하는 지능형 AI 비서 시스템**입니다.
 
-반응형 **사이버 코어(Cyber Core)** 인터페이스를 기반으로, 
-로어북(Lorebook) & 모듈형 규칙 주입 엔진, 정규식/트리거 매크로 파이프라인, 그리고 고정밀 음성 인식(STT)과 합성(TTS)을 완벽하게 통합하고자 했습니다.
+사이버펑크 감성의 반응형 **사이버 코어(Cyber Core)** 인터페이스를 기반으로, 브라우저 기본 경고창(`alert`) 없는 현대적인 인터랙션, 로어북(Lorebook) & 모듈형 규칙 주입 엔진, 정규식/트리거 매크로 파이프라인, 그리고 고정밀 음성 인식(STT)과 합성(TTS)을 완벽하게 통합했습니다.
 
 ---
 
-## 핵심 기능 (Key Features)
+## ✨ 핵심 기능 (Key Features)
 
-### 1. 자율 음성 상호작용 (Dual-Engine STT & Multilingual TTS)
+### 1. 🎙️ 자율 음성 상호작용 (Dual-Engine STT & Multilingual TTS)
 - **실시간 음향 교정 필터 (Web Speech API)**: 고유명사 '미노리'를 '며느리', '미누리' 등으로 오인식하는 음향 편차를 실시간으로 100% 감지 및 자동 교정.
 - **고정밀 멀티모달 STT (Google Gemini 2.5 Audio & OpenAI Whisper)**: 마이크 오디오를 고정밀 AI 모델에 전송하여 잡음 환경이나 전문 용어도 단어 힌트(Prompt Keywords)를 바탕으로 완벽하게 전사.
 - **다국어 TTS 음성 합성**: Web Speech API, OpenAI TTS(`tts-1`, `tts-1-hd`), ElevenLabs, Google Cloud TTS 연동 및 음높이/속도 실시간 제어.
 
-### 2. 로컬 자율 도구 실행 (Agentic Tool Calling Loop)
+### 2. 🛠️ 로컬 자율 도구 실행 (Agentic Tool Calling Loop)
 - 사용자의 자연어 지시를 해석하여 **로컬 파일 탐색, 읽기, 생성, 수정, 백업, 시스템 시간 확인** 등의 도구를 스스로 판단하여 순차 실행.
 - **White Thought 시스템**: 비서의 사고 과정, 도구 판단 로직, 실행 결과를 대화 풍선 내부의 접이식 카드로 투명하게 브리핑.
 
-### 3. 로어북 & 모듈형 규칙 관리 (Lorebook & Dynamic Modules)
+### 3. 📚 로어북 & 모듈형 규칙 관리 (Lorebook & Dynamic Modules)
 - **계층형 로어북 시스템**: 폴더별 정리, 키워드 기반 동적 주입, 토큰 상한선(Token Limit) 자동 제어.
 - **모듈형 프롬프트 에디터**: *"주도적 파일 탐색"*, *"비파괴 저장 원칙"*, *"자비스 비서 어조"*, *"핵심 요약 브리핑"* 등 원하는 행동 규칙을 카드 형태로 On/Off 토글 및 직접 커스텀 추가/편집.
 
-### 4. 정규식 매크로 & 트리거 스크립트 (Regex & Trigger Engine)
+### 4. ⚡ 정규식 매크로 & 트리거 스크립트 (Regex & Trigger Engine)
 - **4단계 정규식 파이프라인**: `Input`(입력 전), `Output`(답변 생성 후), `Request`(API 전송 직전), `Display`(화면 표시 시) 텍스트를 실시간 치환.
 - **버튼 트리거 매크로**: `{{button::라벨::트리거명}}` 문법 지원, 원클릭 인터랙티브 작업 자동화.
 
-### 5. 대화면 설정 대시보드 & 사이버 코어 UI
+### 5. 🖥️ 대화면 설정 대시보드 & 사이버 코어 UI
 - **드래그 조절형 스플릿 레이아웃**: 마우스 드래그로 사이드바 너비를 200px ~ 650px까지 부드럽게 조절(재접속 시 자동 기억).
 - **메인 설정 대시보드**: 비좁은 사이드바가 아닌 메인 영역 전체에서 시원하게 AI 모델, 로어북, 모듈, 음성 설정을 한눈에 관리.
 - **마크다운 & 수식($) & 원클릭 코드 복사**: 풍부한 서식과 KaTeX 스타일 수식 렌더링 지원.
@@ -52,7 +50,7 @@
 
 ---
 
-## 시스템 아키텍처 (Architecture)
+## 🏛️ 시스템 아키텍처 (Architecture)
 
 ```mermaid
 graph LR
@@ -121,7 +119,7 @@ python run_server.py
 
 ---
 
-## 음성 명령 예시 (Voice & Chat Commands)
+## 💬 음성 명령 예시 (Voice & Chat Commands)
 
 - *"미노리야, 지금 몇 시야?"* (시스템 시각 실시간 확인)
 - *"작업 공간에 어떤 파이썬 파일들이 있는지 검사해줘."* (디렉터리 파일 트리 자동 탐색)
@@ -130,10 +128,10 @@ python run_server.py
 
 ---
 
-## 향후 로드맵 (Roadmap)
+## 🗺️ 향후 로드맵 (Roadmap)
 
 - [x] 반응형 사이버 코어 애니메이션 및 다크 테마 UI
-- [x] Google Gemini 3.6 Flash/Pro 에이전트 도구 호출 루프
+- [x] Google Gemini 2.5 Flash/Pro 에이전트 도구 호출 루프
 - [x] 브라우저 Web Speech API 및 고정밀 Gemini/Whisper STT 연동
 - [x] 로어북(Lorebook) & 모듈형 규칙 편집 대시보드
 - [x] 마크다운 서식, 코드 블록 원클릭 복사, 수식($) 표기
@@ -144,6 +142,6 @@ python run_server.py
 
 ---
 
-## 라이선스 (License)
+## 📜 라이선스 (License)
 
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
