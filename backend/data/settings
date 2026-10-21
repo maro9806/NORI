@@ -1,0 +1,24 @@
+{
+  "allowed_workspaces": [
+    {
+      "id": "ws_main",
+      "alias": "AI 메인 프로젝트",
+      "path": "D:\\AIproject",
+      "read_only": false,
+      "enabled": true
+    },
+    {
+      "id": "ws_docs",
+      "alias": "개인 문서 보관함",
+      "path": "D:\\Documents\\Notes",
+      "read_only": true,
+      "enabled": false
+    }
+    ,{
+      "api_key": "",
+      "workspace_dir": "D:\\AIproject",
+      "model_name": "gemini-3.6-flash",
+      "temperature": 0.2
+}
+  ]
+}

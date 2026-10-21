@@ -1,0 +1,15 @@
+{
+  "api_key": "",
+  "workspace_dir": "D:\\AIproject",
+  "model_name": "gemini-3.8-flash",
+  "temperature": 0.2,
+  "allowed_workspaces": [
+    {
+      "id": "ws_main",
+      "alias": "기본 작업 폴더",
+      "path": "D:\\AIproject",
+      "read_only": false,
+      "enabled": true
+    }
+  ]
+}
