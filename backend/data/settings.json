@@ -1,7 +1,7 @@
 {
   "api_key": "",
   "workspace_dir": "D:\\AIproject",
-  "model_name": "gemini-3.8-flash",
+  "model_name": "ollama",
   "temperature": 0.2,
   "allowed_workspaces": [
     {
@@ -11,5 +11,7 @@
       "read_only": false,
       "enabled": true
     }
-  ]
+  ],
+  "openai_api_key": "",
+  "custom_endpoint": "http://localhost:11434/v1"
 }

@@ -165,7 +165,7 @@ document.addEventListener('DOMContentLoaded', () => {
     if (!text) return '';
     let md = String(text);
 
-    // 0. 코드 블록 임시 보관 (```lang\ncode\n```)
+    // 0. 코드 블록 임시 보관 (```lang\ncode\n```) - 마크다운 기호(_ * $)가 없는 안전한 유니코드 구분자 사용
     const codeBlocks = [];
     md = md.replace(/```([a-zA-Z0-9_\-\+]*)\n([\s\S]*?)```/g, (match, lang, code) => {
       const idx = codeBlocks.length;
@@ -180,7 +180,7 @@ document.addEventListener('DOMContentLoaded', () => {
           <pre><code class="language-${lang || 'none'}">${escapedCode}</code></pre>
         </div>
       `);
-      return `%%CODEBLOCK_${idx}%%`;
+      return `\uE000CB${idx}\uE001`;
     });
 
     // 1. 블록 수식 ($$ ... $$)
@@ -188,15 +188,42 @@ document.addEventListener('DOMContentLoaded', () => {
     md = md.replace(/\$\$([\s\S]*?)\$\$/g, (match, math) => {
       const idx = mathBlocks.length;
       mathBlocks.push(`<div class="math-block">${escapeHtml(math.trim())}</div>`);
-      return `%%MATHBLOCK_${idx}%%`;
+      return `\uE000MB${idx}\uE001`;
     });
 
-    // 2. 인라인 코드 (`code`)
+    // 2. 인라인 코드 (`code`) - 마크다운 서식에 의한 플레이스홀더 파손 방지
     const inlineCodes = [];
     md = md.replace(/`([^`\n]+)`/g, (match, code) => {
       const idx = inlineCodes.length;
       inlineCodes.push(`<code class="inline-code">${escapeHtml(code)}</code>`);
-      return `%%INLINECODE_${idx}%%`;
+      return `\uE000IC${idx}\uE001`;
+    });
+
+    // 2.5 마크다운 이미지 (![alt](url)) 및 웹 링크 ([title](url)) 보호 파싱
+    const mdImages = [];
+    md = md.replace(/!\[([^\]]*)\]\(([^)\s]+)\)/g, (match, alt, url) => {
+      const idx = mdImages.length;
+      const safeAlt = escapeHtml(alt || '생성된 이미지');
+      const safeUrl = String(url).replace(/"/g, '&quot;');
+      mdImages.push(`
+        <div class="chat-inline-image-card">
+          <img src="${safeUrl}" alt="${safeAlt}" class="chat-inline-image" onclick="window.openImageLightbox(this.src, this.alt)">
+          <div class="chat-inline-image-Meta">
+            <span class="chat-inline-image-caption">${safeAlt}</span>
+            <a href="${safeUrl}" download class="chat-inline-image-dl" target="_blank">다운로드</a>
+          </div>
+        </div>
+      `);
+      return `\uE000IMG${idx}\uE001`;
+    });
+
+    const mdLinks = [];
+    md = md.replace(/\[([^\]]+)\]\((https?:\/\/[^)\s]+|\/[^)\s]+)\)/g, (match, label, url) => {
+      const idx = mdLinks.length;
+      const safeLabel = escapeHtml(label);
+      const safeUrl = String(url).replace(/"/g, '&quot;');
+      mdLinks.push(`<a href="${safeUrl}" target="_blank" rel="noopener noreferrer" class="md-link">${safeLabel}</a>`);
+      return `\uE000LNK${idx}\uE001`;
     });
 
     // 3. 인라인 수식 ($math$)
@@ -209,11 +236,11 @@ document.addEventListener('DOMContentLoaded', () => {
     md = md.replace(/^## (.*$)/gim, '<h4 class="md-h2">$1</h4>');
     md = md.replace(/^# (.*$)/gim, '<h3 class="md-h1">$1</h3>');
 
-    // 5. 볼드 / 이탤릭 / 취소선
+    // 5. 볼드 / 이탤릭 / 취소선 (단어 경계 기반 안전 파싱)
     md = md.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
     md = md.replace(/__(.*?)__/g, '<strong>$1</strong>');
-    md = md.replace(/\*(.*?)\*/g, '<em>$1</em>');
-    md = md.replace(/_(.*?)_/g, '<em>$1</em>');
+    md = md.replace(/(?<!\*)\*(?!\s)([^\n*]+?)(?<!\s)\*(?!\*)/g, '<em>$1</em>');
+    md = md.replace(/(?<!\w)_(?!\s)([^\n_]+?)(?<!\s)_(?!\w)/g, '<em>$1</em>');
     md = md.replace(/~~(.*?)~~/g, '<del>$1</del>');
 
     // 6. 인용구 (> ...)
@@ -229,19 +256,38 @@ document.addEventListener('DOMContentLoaded', () => {
     // 9. 줄바꿈 처리 (\n -> <br>)
     md = md.replace(/\n/g, '<br>');
 
-    // 10. 플레이스홀더 원복 (코드 블록, 인라인 코드, 수식)
+    // 10. 플레이스홀더 원복 (코드 블록, 인라인 코드, 수식, 이미지, 링크)
     codeBlocks.forEach((block, idx) => {
-      md = md.replace(`%%CODEBLOCK_${idx}%%`, block);
+      md = md.replace(`\uE000CB${idx}\uE001`, block);
     });
     mathBlocks.forEach((block, idx) => {
-      md = md.replace(`%%MATHBLOCK_${idx}%%`, block);
+      md = md.replace(`\uE000MB${idx}\uE001`, block);
     });
     inlineCodes.forEach((code, idx) => {
-      md = md.replace(`%%INLINECODE_${idx}%%`, code);
+      md = md.replace(`\uE000IC${idx}\uE001`, code);
+    });
+    mdImages.forEach((imgHtml, idx) => {
+      md = md.replace(`\uE000IMG${idx}\uE001`, imgHtml);
+    });
+    mdLinks.forEach((lnkHtml, idx) => {
+      md = md.replace(`\uE000LNK${idx}\uE001`, lnkHtml);
     });
 
     return md;
   }
+
+  // 이미지 확대 라이트박스 뷰어 (전역)
+  window.openImageLightbox = function(src, alt) {
+    if (!src) return;
+    const backdrop = document.createElement('div');
+    backdrop.className = 'image-lightbox-backdrop';
+    backdrop.innerHTML = `
+      <img src="${src}" alt="${escapeHtml(alt || '')}">
+      <div class="image-lightbox-caption">${escapeHtml(alt || '클릭하면 닫힙니다')} (클릭 시 닫기)</div>
+    `;
+    backdrop.addEventListener('click', () => backdrop.remove());
+    document.body.appendChild(backdrop);
+  };
 
   // 코드 블록 복사 함수 (전역)
   window.copyCodeBlock = function(btn) {
@@ -418,9 +464,136 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   // ==========================================
+  // 정규식 & 트리거 스크립트 데이터 및 파이프라인 엔진 (초기화)
+  // ==========================================
+  let regexScripts = [
+    {
+      id: 'reg_emo',
+      name: '감정 태그 추출기',
+      placement: 'output', // 'input' | 'output' | 'request' | 'display'
+      in: '\\[(기쁨|슬픔|화남|미소|생각중|놀람)\\]',
+      out: '@@emo $1',
+      active: true
+    },
+    {
+      id: 'reg_display_accent',
+      name: '미노리 호출 강조',
+      placement: 'display',
+      in: '(미노리)',
+      out: '✨$1',
+      active: true
+    }
+  ];
+
+  let triggerScripts = [
+    {
+      id: 'trig_greeting',
+      triggerName: 'Greeting',
+      type: 'manual', // 'manual' | 'on_send' | 'on_receive'
+      actionType: 'insert_message', // 'insert_message' | 'set_emotion' | 'toast_alert' | 'custom_js'
+      actionValue: '주인님, 무엇을 도와드릴까요? 명령을 기다리고 있습니다.',
+      active: true
+    },
+    {
+      id: 'trig_smile',
+      triggerName: 'Smile',
+      type: 'manual',
+      actionType: 'set_emotion',
+      actionValue: '기쁨',
+      active: true
+    }
+  ];
+
+  try {
+    const savedReg = localStorage.getItem('minori_regex_scripts');
+    if (savedReg) regexScripts = JSON.parse(savedReg);
+    const savedTrig = localStorage.getItem('minori_trigger_scripts');
+    if (savedTrig) triggerScripts = JSON.parse(savedTrig);
+  } catch (e) {
+    console.warn('스크립트 로컬 스토리지 복원 오류:', e);
+  }
+
+  function saveScriptsToStorage() {
+    try {
+      localStorage.setItem('minori_regex_scripts', JSON.stringify(regexScripts));
+      localStorage.setItem('minori_trigger_scripts', JSON.stringify(triggerScripts));
+    } catch (e) {
+      console.warn('스크립트 로컬 스토리지 저장 오류:', e);
+    }
+  }
+
+  function applyCustomRegex(text, inPattern, outPattern) {
+    if (!text || !inPattern) return text;
+    try {
+      const regex = new RegExp(inPattern, 'g');
+
+      if (outPattern.trim().startsWith('@@')) {
+        const match = text.match(regex);
+        if (match) {
+          const trimmedOut = outPattern.trim();
+          if (trimmedOut.startsWith('@@emo')) {
+            const emoName = trimmedOut.replace(/^@@emo\s*/, '').trim();
+            const evaluatedEmoName = emoName.replace(/\$1/g, match[1] || '').trim();
+            setEmotion(evaluatedEmoName || '기쁨');
+          }
+          return text;
+        }
+        return text;
+      }
+
+      return text.replace(regex, (match, ...args) => {
+        const namedGroups = (typeof args[args.length - 1] === 'object' && args[args.length - 1] !== null) ? args[args.length - 1] : {};
+        const fullString = (typeof args[args.length - 1] === 'object') ? args[args.length - 2] : args[args.length - 1];
+        const offset = (typeof args[args.length - 1] === 'object') ? args[args.length - 3] : args[args.length - 2];
+        const captures = args.slice(0, (typeof args[args.length - 1] === 'object') ? args.length - 3 : args.length - 2);
+
+        let res = outPattern;
+        res = res.replace(/\$\(([a-zA-Z0-9_]+)\)/g, (_, name) => (namedGroups[name] !== undefined ? namedGroups[name] : ''));
+        res = res.replace(/\$`/g, fullString.slice(0, offset));
+        res = res.replace(/\$&/g, match);
+        res = res.replace(/\$([0-9]+)/g, (_, num) => {
+          const idx = parseInt(num, 10) - 1;
+          return captures[idx] !== undefined ? captures[idx] : '$' + num;
+        });
+        res = res.replace(/\$\$/g, '$');
+        return res;
+      });
+    } catch (err) {
+      console.warn('정규식 처리 중 오류:', err);
+      return text;
+    }
+  }
+
+  function applyRegexPipeline(text, placementType) {
+    if (typeof text !== 'string') return text;
+    let result = text;
+    try {
+      if (Array.isArray(regexScripts)) {
+        regexScripts.forEach(script => {
+          if (script && script.active && script.placement === placementType && script.in) {
+            result = applyCustomRegex(result, script.in, script.out || '');
+          }
+        });
+      }
+    } catch (err) {
+      console.warn('정규식 파이프라인 처리 중 오류:', err);
+    }
+    return result;
+  }
+
+  // ==========================================
   // 4. 채팅 세션 데이터 저장소 (멀티 세션 메시지 보존)
   // ==========================================
-  const chatSessionsData = {};
+  let chatSessionsData = {};
+  try {
+    const savedSessions = localStorage.getItem('minori_chat_sessions_data');
+    if (savedSessions) {
+      chatSessionsData = JSON.parse(savedSessions);
+    }
+  } catch (e) {
+    console.warn('chatSessionsData 복원 실패:', e);
+    chatSessionsData = {};
+  }
   const chatViewport = document.getElementById('chatViewport');
 
   function saveCurrentChatMessages(chatId) {
@@ -439,6 +612,11 @@ document.addEventListener('DOMContentLoaded', () => {
       });
     });
     chatSessionsData[chatId] = messages;
+    try {
+      localStorage.setItem('minori_chat_sessions_data', JSON.stringify(chatSessionsData));
+    } catch (e) {
+      console.warn('대화 메시지 localStorage 저장 오류:', e);
+    }
   }
 
   function renderGuideMessage() {
@@ -534,6 +712,7 @@ document.addEventListener('DOMContentLoaded', () => {
       });
     } else {
       renderGuideMessage();
+      saveCurrentChatMessages(chatId);
     }
     chatViewport.scrollTop = chatViewport.scrollHeight;
   }
@@ -547,10 +726,25 @@ document.addEventListener('DOMContentLoaded', () => {
 
     let thoughtHtml = '';
     if (thought) {
+      let tokenBadgeHtml = '';
+      const inMatch = String(thought).match(/Input 토큰[^:]*:\s*([0-9,]+)/);
+      const outMatch = String(thought).match(/Output 토큰[^:]*:\s*([0-9,]+)/);
+      const cacheMatch = String(thought).match(/Cache 토큰[^:]*:\s*([0-9,]+)\s*토큰(?:\s*\|\s*로컬 컨텍스트 캐시[^:]*:\s*([0-9,]+))?/);
+      if (inMatch && outMatch) {
+        const inVal = inMatch[1];
+        const outVal = outMatch[1];
+        const apiCacheVal = cacheMatch ? cacheMatch[1] : '0';
+        const ctxCacheVal = (cacheMatch && cacheMatch[2]) ? cacheMatch[2] : null;
+        const cacheLabel = (apiCacheVal === '0' && ctxCacheVal) ? `${apiCacheVal} (컨텍스트 ${ctxCacheVal})` : apiCacheVal;
+        tokenBadgeHtml = `<span class="thought-token-badge">IN: ${inVal} · OUT: ${outVal} · CACHE: ${cacheLabel}</span>`;
+      }
       thoughtHtml = `
         <div class="thought-container collapsed">
           <div class="thought-header">
-            <span>White Thought (사고 및 도구 로그)</span>
+            <div style="display:flex; align-items:center; gap:8px; flex-wrap:wrap;">
+              <span>White Thought (사고 및 도구 로그)</span>
+              ${tokenBadgeHtml}
+            </div>
             <span class="toggle-arrow">▶</span>
           </div>
           <div class="thought-content">${escapeHtml(thought)}</div>
@@ -625,8 +819,11 @@ document.addEventListener('DOMContentLoaded', () => {
     // 1. White thought 토글
     const thoughtHeader = e.target.closest('.thought-header');
     if (thoughtHeader) {
+      e.stopPropagation();
       const thoughtContainer = thoughtHeader.closest('.thought-container');
-      if (thoughtContainer) thoughtContainer.classList.toggle('collapsed');
+      if (thoughtContainer) {
+        thoughtContainer.classList.toggle('collapsed');
+      }
       return;
     }
 
@@ -646,7 +843,15 @@ document.addEventListener('DOMContentLoaded', () => {
     const editBtn = e.target.closest('.action-edit-msg');
     if (editBtn) {
       const msgEl = editBtn.closest('.chat-message');
-      if (!msgEl || msgEl.querySelector('.inline-edit-box')) return;
+      if (!msgEl) return;
+
+      const existingEditBox = msgEl.querySelector('.inline-edit-box');
+      if (existingEditBox) {
+        // 이미 편집 중일 때 상단 편집 버튼을 다시 누르면 즉시 자동 저장 및 완료 처리
+        const saveBtn = existingEditBox.querySelector('.btn-save-edit');
+        if (saveBtn) saveBtn.click();
+        return;
+      }
 
       const bodyEl = msgEl.querySelector('.message-body');
       const textSpan = msgEl.querySelector('.message-text');
@@ -665,13 +870,21 @@ document.addEventListener('DOMContentLoaded', () => {
 
       if (bodyEl) bodyEl.style.display = 'none';
       msgEl.appendChild(editBox);
+      editBtn.classList.add('active');
+      editBtn.title = '편집 완료 (클릭 시 저장)';
 
       const textarea = editBox.querySelector('.inline-edit-textarea');
       textarea.focus();
 
-      editBox.querySelector('.btn-cancel-edit').onclick = () => {
+      const cleanupEditState = () => {
         editBox.remove();
         if (bodyEl) bodyEl.style.display = '';
+        editBtn.classList.remove('active');
+        editBtn.title = isUser ? '메시지 편집' : '답변 편집';
+      };
+
+      editBox.querySelector('.btn-cancel-edit').onclick = () => {
+        cleanupEditState();
       };
 
       editBox.querySelector('.btn-save-edit').onclick = () => {
@@ -684,8 +897,7 @@ document.addEventListener('DOMContentLoaded', () => {
         } else if (bodyEl) {
           bodyEl.innerHTML = (isUser ? '<b>주인님:</b> ' : '') + `<span class="message-text">${modified}</span>`;
         }
-        editBox.remove();
-        if (bodyEl) bodyEl.style.display = '';
+        cleanupEditState();
         const ctx = getActiveChatContext();
         saveCurrentChatMessages(ctx.chatId);
       };
@@ -697,8 +909,14 @@ document.addEventListener('DOMContentLoaded', () => {
     if (ttsBtn) {
       const msgEl = ttsBtn.closest('.chat-message');
       if (msgEl) {
+        if (typeof isTtsPlaying !== 'undefined' && isTtsPlaying && window.speechSynthesis && window.speechSynthesis.speaking) {
+          stopTts();
+          showToast('음성 출력을 중지했습니다.', 'info');
+          return;
+        }
         const textSpan = msgEl.querySelector('.message-text') || msgEl.querySelector('.message-body');
-        if (textSpan) speakMessage(textSpan.innerText);
+        const textToSpeak = msgEl.dataset.rawContent || (textSpan ? textSpan.innerText : '');
+        speakMessage(textToSpeak);
       }
       return;
     }
@@ -796,10 +1014,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   });
 
-  const initialActiveItem = document.querySelector('.session-item.active');
-  if (initialActiveItem) {
-    saveCurrentChatMessages(initialActiveItem.dataset.chatId);
-  }
+
 
   // ==========================================
   // 5. 채팅 드래그 앤 드롭 및 리스트 관리
@@ -855,6 +1070,7 @@ document.addEventListener('DOMContentLoaded', () => {
       }
       clearAllDragHoverIndicators();
       updateScopeBannerText();
+      saveSessionTreeToStorage();
     });
   }
 
@@ -885,6 +1101,7 @@ document.addEventListener('DOMContentLoaded', () => {
       }
       clearAllDragHoverIndicators();
       updateScopeBannerText();
+      saveSessionTreeToStorage();
     });
   }
 
@@ -913,6 +1130,7 @@ document.addEventListener('DOMContentLoaded', () => {
       }
       clearAllDragHoverIndicators();
       updateScopeBannerText();
+      saveSessionTreeToStorage();
     });
   }
 
@@ -945,6 +1163,7 @@ document.addEventListener('DOMContentLoaded', () => {
       if (rootList) rootList.appendChild(draggedSessionItem);
       clearAllDragHoverIndicators();
       updateScopeBannerText();
+      saveSessionTreeToStorage();
     }
   });
 
@@ -979,6 +1198,146 @@ document.addEventListener('DOMContentLoaded', () => {
     return item;
   };
 
+  // 세션 트리(노트 폴더, 대화 세션 목록, 순서, 활성 세션)를 localStorage에 영구 보존
+  function saveSessionTreeToStorage() {
+    if (!sessionTree) return;
+    const notes = [];
+    sessionTree.querySelectorAll('.note-group').forEach(noteEl => {
+      const noteId = noteEl.dataset.noteId || `note_${Date.now()}`;
+      const noteTitleEl = noteEl.querySelector('.note-title');
+      const noteTitle = noteTitleEl ? noteTitleEl.textContent.trim() : '노트';
+      const isCollapsed = noteEl.classList.contains('collapsed');
+      const chats = [];
+      noteEl.querySelectorAll('.session-item').forEach(chatEl => {
+        const nameEl = chatEl.querySelector('.session-name');
+        chats.push({
+          id: chatEl.dataset.chatId,
+          title: nameEl ? nameEl.textContent.trim() : '대화'
+        });
+      });
+      notes.push({ id: noteId, title: noteTitle, collapsed: isCollapsed, chats: chats });
+    });
+
+    const rootChats = [];
+    const rootList = sessionTree.querySelector('.root-chat-list');
+    if (rootList) {
+      rootList.querySelectorAll('.session-item').forEach(chatEl => {
+        const nameEl = chatEl.querySelector('.session-name');
+        rootChats.push({
+          id: chatEl.dataset.chatId,
+          title: nameEl ? nameEl.textContent.trim() : '대화'
+        });
+      });
+    }
+
+    const activeItem = sessionTree.querySelector('.session-item.active');
+    const activeChatId = activeItem ? activeItem.dataset.chatId : null;
+
+    const treeData = {
+      notes: notes,
+      rootChats: rootChats,
+      activeChatId: activeChatId
+    };
+
+    try {
+      localStorage.setItem('minori_session_tree', JSON.stringify(treeData));
+      if (activeChatId) {
+        localStorage.setItem('minori_active_chat_id', activeChatId);
+      }
+    } catch (e) {
+      console.warn('세션 트리 localStorage 저장 실패:', e);
+    }
+  }
+
+  // 새로고침 시 localStorage에서 세션 트리 및 이전 대화 상태를 복원
+  function restoreSessionTreeFromStorage() {
+    if (!sessionTree) return false;
+    let treeData = null;
+    try {
+      const saved = localStorage.getItem('minori_session_tree');
+      if (saved) treeData = JSON.parse(saved);
+    } catch (e) {
+      console.warn('세션 트리 파싱 실패:', e);
+      return false;
+    }
+
+    if (!treeData || (!treeData.notes && !treeData.rootChats)) {
+      return false;
+    }
+
+    sessionTree.innerHTML = '';
+
+    const rootList = document.createElement('ul');
+    rootList.className = 'root-chat-list';
+    sessionTree.appendChild(rootList);
+    setupRootChatListDrop(rootList);
+
+    // 1. 노트(폴더) 복원
+    if (Array.isArray(treeData.notes)) {
+      treeData.notes.forEach(noteData => {
+        const note = document.createElement('div');
+        note.className = `note-group ${noteData.collapsed ? 'collapsed' : ''}`;
+        note.dataset.noteId = noteData.id || `note_${Date.now()}`;
+        note.innerHTML = `
+          <div class="note-header">
+            <div class="note-header-left">
+              <svg class="tree-arrow" viewBox="0 0 24 24"><path d="M8.59 16.59L13.17 12 8.59 7.41 10 6l6 6-6 6-1.41-1.41z"/></svg>
+              <svg class="icon-folder" viewBox="0 0 24 24"><path d="M10 4H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V8c0-1.1-.9-2-2-2h-8l-2-2z"/></svg>
+              <span class="note-title"></span>
+            </div>
+            <div class="item-actions">
+              <button class="btn-icon-action action-note-chat" title="노트 내 새 대화 추가">
+                <svg viewBox="0 0 24 24"><path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/></svg>
+              </button>
+              <button class="btn-icon-action danger action-note-delete" title="노트 삭제">
+                <svg viewBox="0 0 24 24"><path d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"/></svg>
+              </button>
+            </div>
+          </div>
+          <ul class="note-chat-list"></ul>
+        `;
+        note.querySelector('.note-title').textContent = noteData.title || '노트';
+        setupNoteGroupDrop(note);
+
+        const chatList = note.querySelector('.note-chat-list');
+        if (Array.isArray(noteData.chats)) {
+          noteData.chats.forEach(c => {
+            const item = createSessionItem(c.title || '대화', c.id);
+            chatList.appendChild(item);
+          });
+        }
+        sessionTree.insertBefore(note, rootList);
+      });
+    }
+
+    // 2. 루트 대화 목록 복원
+    if (Array.isArray(treeData.rootChats) && treeData.rootChats.length > 0) {
+      treeData.rootChats.forEach(c => {
+        const item = createSessionItem(c.title || '대화', c.id);
+        rootList.appendChild(item);
+      });
+    } else if (!treeData.notes || treeData.notes.length === 0) {
+      const defaultItem = createSessionItem('미노리 시작 가이드', 'chat_default');
+      rootList.appendChild(defaultItem);
+    }
+
+    // 3. 활성 대화 세션 활성화 및 메시지 렌더링
+    const targetChatId = treeData.activeChatId || localStorage.getItem('minori_active_chat_id');
+    let activeItem = targetChatId ? sessionTree.querySelector(`.session-item[data-chat-id="${targetChatId}"]`) : null;
+    if (!activeItem) {
+      activeItem = sessionTree.querySelector('.session-item');
+    }
+
+    if (activeItem) {
+      sessionTree.querySelectorAll('.session-item').forEach(i => i.classList.remove('active'));
+      activeItem.classList.add('active');
+      const title = activeItem.querySelector('.session-name').textContent.trim();
+      loadChatMessages(activeItem.dataset.chatId, title);
+    }
+
+    return true;
+  }
+
   const addChat = (container) => {
     showModalPrompt('새 대화 생성', '새 대화 제목을 입력하세요', '새 대화', (name) => {
       if (!name) return;
@@ -986,6 +1345,7 @@ document.addEventListener('DOMContentLoaded', () => {
       const item = createSessionItem(name.trim(), newChatId);
       container.appendChild(item);
       switchActiveChat(item);
+      saveSessionTreeToStorage();
       showToast(`'${name.trim()}' 대화가 생성되었습니다.`, 'success');
     });
   };
@@ -1002,6 +1362,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const title = targetItem.querySelector('.session-name').textContent.trim();
     loadChatMessages(targetItem.dataset.chatId, title);
 
+    saveSessionTreeToStorage();
     renderLorebookView();
   }
 
@@ -1039,6 +1400,7 @@ document.addEventListener('DOMContentLoaded', () => {
       const rootList = sessionTree.querySelector('.root-chat-list');
       if (rootList) sessionTree.insertBefore(note, rootList);
       else sessionTree.appendChild(note);
+      saveSessionTreeToStorage();
       showToast(`'${name.trim()}' 노트가 생성되었습니다.`, 'success');
     });
   });
@@ -1235,7 +1597,11 @@ document.addEventListener('DOMContentLoaded', () => {
       const noteTitle = note.querySelector('.note-title').textContent.trim();
       showModalConfirm('노트 삭제 확인', `'${noteTitle}' 노트를 삭제하시겠습니까? (하위 대화도 함께 삭제됩니다)`, () => {
         note.querySelectorAll('.session-item').forEach(c => delete chatSessionsData[c.dataset.chatId]);
+        try {
+          localStorage.setItem('minori_chat_sessions_data', JSON.stringify(chatSessionsData));
+        } catch (err) {}
         note.remove();
+        saveSessionTreeToStorage();
         renderLorebookView();
         showToast(`'${noteTitle}' 노트가 삭제되었습니다.`, 'info');
       });
@@ -1250,6 +1616,7 @@ document.addEventListener('DOMContentLoaded', () => {
         if (newName && newName.trim()) {
           nameSpan.textContent = newName.trim();
           updateScopeBannerText();
+          saveSessionTreeToStorage();
           showToast('대화 제목이 수정되었습니다.', 'success');
         }
       });
@@ -1277,6 +1644,9 @@ document.addEventListener('DOMContentLoaded', () => {
       const chatTitle = item.querySelector('.session-name').textContent.trim();
       showModalConfirm('대화 삭제 확인', `'${chatTitle}' 대화를 삭제하시겠습니까?`, () => {
         delete chatSessionsData[item.dataset.chatId];
+        try {
+          localStorage.setItem('minori_chat_sessions_data', JSON.stringify(chatSessionsData));
+        } catch (err) {}
         const wasActive = item.classList.contains('active');
         item.remove();
         if (wasActive) {
@@ -1284,6 +1654,7 @@ document.addEventListener('DOMContentLoaded', () => {
           if (nextActive) switchActiveChat(nextActive);
           else chatViewport.innerHTML = '';
         }
+        saveSessionTreeToStorage();
         renderLorebookView();
         showToast(`'${chatTitle}' 대화가 삭제되었습니다.`, 'info');
       });
@@ -1293,6 +1664,20 @@ document.addEventListener('DOMContentLoaded', () => {
     const sessionItem = e.target.closest('.session-item');
     if (sessionItem && !sessionItem.classList.contains('active')) {
       switchActiveChat(sessionItem);
+    }
+  });
+
+  // 세션 트리 복원 및 초기 활성 대화 로드는 전체 UI 컴포넌트(모듈, 로어북, 플러그인, API) 등록 완료 후 최하단에서 일괄 실행합니다.
+
+  // 브라우저 새로고침(F5) 또는 탭 닫기 전 최신 상태 플러시
+  window.addEventListener('beforeunload', () => {
+    const currentActive = sessionTree ? sessionTree.querySelector('.session-item.active') : null;
+    if (currentActive) {
+      saveCurrentChatMessages(currentActive.dataset.chatId);
+    }
+    saveSessionTreeToStorage();
+    if (typeof saveCurrentLorebookDOMToStore === 'function') {
+      saveCurrentLorebookDOMToStore();
     }
   });
 
@@ -1308,7 +1693,15 @@ document.addEventListener('DOMContentLoaded', () => {
   const lbMaxTokens = document.getElementById('lbMaxTokens');
   const btnSaveLbConfig = document.getElementById('btnSaveLbConfig');
 
-  const lorebookStore = {
+  let savedLbStore = null;
+  try {
+    const rawLb = localStorage.getItem('minori_lorebook_store');
+    if (rawLb) savedLbStore = JSON.parse(rawLb);
+  } catch (e) {
+    console.warn('로어북 스토어 파싱 실패:', e);
+  }
+
+  const lorebookStore = savedLbStore || {
     notes: {
       'note_work': {
         folders: [
@@ -1416,6 +1809,11 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     targetStore[scopeKey] = { folders, rootEntries };
+    try {
+      localStorage.setItem('minori_lorebook_store', JSON.stringify(lorebookStore));
+    } catch (e) {
+      console.warn('로어북 localStorage 저장 실패:', e);
+    }
   }
 
   function renderLorebookView() {
@@ -2183,14 +2581,99 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
-  // TTS 발화 함수
-  function speakMessage(text) {
-    if (!text || !('speechSynthesis' in window)) return;
-    const cleanText = text.replace(/<[^>]*>?/gm, '').replace(/\[White Thought[\s\S]*?\]/g, '').trim();
-    if (!cleanText) return;
+  // ==========================================
+  // TTS 음성 발화 전처리 필터 & 크롬 GC 방어형 문장 분할 스트리밍 엔진
+  // ==========================================
+  function cleanTextForSpeech(text) {
+    if (!text) return '';
+    return text
+      // 1. White Thought 및 시스템/HTML 태그 제거
+      .replace(/\[White Thought[\s\S]*?\]/g, '')
+      .replace(/<[^>]*>?/gm, '')
+      // 2. 코드 블록(```...```)을 자연스러운 음성 안내로 치환
+      .replace(/```[\s\S]*?```/g, ' 코드 내용은 화면을 확인해 주세요. ')
+      // 3. 인라인 코드(`코드`)에서 백틱 기호만 제거
+      .replace(/`([^`]+)`/g, '$1')
+      // 4. 마크다운 링크: [텍스트](url) -> 텍스트만 음성으로 읽기 (대괄호 제거 전 선행)
+      .replace(/\[([^\]\n]+)\]\([^)\n]+\)/g, '$1')
+      // 5. 소괄호/대괄호/중괄호 및 별표 행동/지문 제거 (줄바꿈을 건너뛰지 않고 행 단위 안전 매칭)
+      .replace(/\([^)\n]*\)/g, '')
+      .replace(/（[^）\n]*）/g, '')
+      .replace(/\[[^\]\n]*\]/g, '')
+      .replace(/\{[^}\n]*\}/g, '')
+      .replace(/\*[^*\n]+\*/g, '')
+      // 6. 단독 URL 링크 축약
+      .replace(/https?:\/\/[^\s]+/g, '링크')
+      // 7. 마크다운 서식 기호(볼드, 헤더, 인용, 불릿 등) 제거
+      .replace(/(\*\*|__)([\s\S]*?)\1/g, '$2')
+      .replace(/^[\s#>\-\*•]+\s*/gm, '')
+      // 8. 모든 유니코드 이모지 및 특수 그래픽 기호 완전 제거
+      .replace(/[\p{Extended_Pictographic}\uFE0F\u200D\u20E3\u2600-\u27BF]/gu, '')
+      // 9. 불필요한 연속 특수기호 및 잉여 공백 정리
+      .replace(/[~^|\\/=_]+/g, ' ')
+      .replace(/\s+/g, ' ')
+      .trim();
+  }
 
-    window.speechSynthesis.cancel();
-    const utterance = new SpeechSynthesisUtterance(cleanText);
+  // 문장 단위 청크 분할 (크롬 15초 정지 및 말끊김 버그 원천 차단)
+  function splitTextForSpeechChunks(text) {
+    if (!text) return [];
+    const rawChunks = text.match(/[^.!?\n]+[.!?\n]*/g) || [text];
+    const chunks = [];
+    for (let c of rawChunks) {
+      c = c.trim();
+      if (!c) continue;
+      if (c.length > 120) {
+        const subParts = c.match(/[^,]+[,]?/g) || [c];
+        for (let sub of subParts) {
+          sub = sub.trim();
+          if (sub) chunks.push(sub);
+        }
+      } else {
+        chunks.push(c);
+      }
+    }
+    return chunks;
+  }
+
+  // 브라우저 가비지 컬렉션(GC) 및 문장 중단 방지용 전역 큐 및 참조 홀더
+  let ttsQueue = [];
+  let isTtsPlaying = false;
+  let activeTtsUtterance = null;
+  window._activeTtsUtterance = null;
+
+  function stopTts() {
+    isTtsPlaying = false;
+    ttsQueue = [];
+    activeTtsUtterance = null;
+    window._activeTtsUtterance = null;
+    if ('speechSynthesis' in window) {
+      try {
+        window.speechSynthesis.cancel();
+      } catch (e) {
+        console.warn('TTS cancel error:', e);
+      }
+    }
+  }
+
+  function speakNextTtsChunk() {
+    if (!isTtsPlaying || ttsQueue.length === 0 || !('speechSynthesis' in window)) {
+      isTtsPlaying = false;
+      activeTtsUtterance = null;
+      window._activeTtsUtterance = null;
+      return;
+    }
+
+    const chunk = ttsQueue.shift();
+    if (!chunk || !chunk.trim()) {
+      speakNextTtsChunk();
+      return;
+    }
+
+    const utterance = new SpeechSynthesisUtterance(chunk.trim());
+    activeTtsUtterance = utterance;
+    window._activeTtsUtterance = utterance; // V8 가비지 컬렉터의 중간 객체 회수 방지
+
     utterance.rate = Number(ttsRateRange ? ttsRateRange.value : 1.0);
     utterance.pitch = Number(ttsPitchRange ? ttsPitchRange.value : 1.0);
 
@@ -2200,7 +2683,52 @@ document.addEventListener('DOMContentLoaded', () => {
       const v = voices.find(item => item.name === selectedVoiceName);
       if (v) utterance.voice = v;
     }
-    window.speechSynthesis.speak(utterance);
+
+    utterance.onend = () => {
+      if (isTtsPlaying) {
+        speakNextTtsChunk();
+      }
+    };
+
+    utterance.onerror = (e) => {
+      if (e.error !== 'canceled' && e.error !== 'interrupted') {
+        console.warn('TTS 청크 재생 경고:', e);
+      }
+      if (isTtsPlaying && e.error !== 'canceled') {
+        speakNextTtsChunk();
+      }
+    };
+
+    try {
+      window.speechSynthesis.speak(utterance);
+    } catch (err) {
+      console.warn('TTS 발화 실패:', err);
+      speakNextTtsChunk();
+    }
+  }
+
+  // 최상위 TTS 발화 함수
+  function speakMessage(text) {
+    if (!text || !('speechSynthesis' in window)) return;
+    const cleanText = cleanTextForSpeech(text);
+    if (!cleanText) return;
+
+    console.log('[TTS] 발화 시작 (정제된 텍스트):', cleanText);
+
+    stopTts();
+
+    const chunks = splitTextForSpeechChunks(cleanText);
+    if (chunks.length === 0) return;
+
+    ttsQueue = chunks;
+    isTtsPlaying = true;
+
+    // 크롬 cancel() 비동기 타이밍 버그 해결을 위한 50ms 안전 대기
+    setTimeout(() => {
+      if (isTtsPlaying) {
+        speakNextTtsChunk();
+      }
+    }, 50);
   }
 
   if (btnTestTts) {
@@ -2235,128 +2763,8 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
-  // 초기 정규식 스크립트 리스트 (4가지 옵션 & @@emo 지원)
-  let regexScripts = [
-    {
-      id: 'reg_emo',
-      name: '감정 태그 추출기',
-      placement: 'output', // 'input' | 'output' | 'request' | 'display'
-      in: '\\[(기쁨|슬픔|화남|미소|생각중|놀람)\\]',
-      out: '@@emo $1',
-      active: true
-    },
-    {
-      id: 'reg_display_accent',
-      name: '미노리 호출 강조',
-      placement: 'display',
-      in: '(미노리)',
-      out: '✨$1',
-      active: true
-    }
-  ];
-
-  // 초기 트리거 스크립트 리스트
-  let triggerScripts = [
-    {
-      id: 'trig_greeting',
-      triggerName: 'Greeting',
-      type: 'manual', // 'manual' | 'on_send' | 'on_receive'
-      actionType: 'insert_message', // 'insert_message' | 'set_emotion' | 'toast_alert' | 'custom_js'
-      actionValue: '주인님, 무엇을 도와드릴까요? 명령을 기다리고 있습니다.',
-      active: true
-    },
-    {
-      id: 'trig_smile',
-      triggerName: 'Smile',
-      type: 'manual',
-      actionType: 'set_emotion',
-      actionValue: '기쁨',
-      active: true
-    }
-  ];
-
-  // 로컬 스토리지 보존 불러오기
-  try {
-    const savedReg = localStorage.getItem('minori_regex_scripts');
-    if (savedReg) regexScripts = JSON.parse(savedReg);
-    const savedTrig = localStorage.getItem('minori_trigger_scripts');
-    if (savedTrig) triggerScripts = JSON.parse(savedTrig);
-  } catch (e) { console.warn(e); }
-
-  function saveScriptsToStorage() {
-    localStorage.setItem('minori_regex_scripts', JSON.stringify(regexScripts));
-    localStorage.setItem('minori_trigger_scripts', JSON.stringify(triggerScripts));
-  }
-
   // ----------------------------------------------------
-  // 정규식 실행 엔진: IN 매칭 텍스트를 OUT으로 변경
-  // 특수 패턴 지원: $$, $&, $`, $1~$9, $(name), @@emo
-  // ----------------------------------------------------
-  function applyCustomRegex(text, inPattern, outPattern) {
-    if (!text || !inPattern) return text;
-    try {
-      const regex = new RegExp(inPattern, 'g');
-
-      // OUT이 @@로 시작 시, 문자열을 교체하지 않고 특수한 효과 적용
-      if (outPattern.trim().startsWith('@@')) {
-        const match = text.match(regex);
-        if (match) {
-          const trimmedOut = outPattern.trim();
-          if (trimmedOut.startsWith('@@emo')) {
-            // @@emo (emotion name)
-            const emoName = trimmedOut.replace(/^@@emo\s*/, '').trim();
-            // $1 등 매칭 그룹 치환 지원
-            const evaluatedEmoName = emoName.replace(/\$1/g, match[1] || '').trim();
-            setEmotion(evaluatedEmoName || '기쁨');
-          }
-          // 문자열은 변경하지 않고 유지
-          return text;
-        }
-        return text;
-      }
-
-      // 일반 치환 ($$, $&, $`, $1~$9, $(name))
-      return text.replace(regex, (match, ...args) => {
-        const namedGroups = (typeof args[args.length - 1] === 'object' && args[args.length - 1] !== null) ? args[args.length - 1] : {};
-        const fullString = (typeof args[args.length - 1] === 'object') ? args[args.length - 2] : args[args.length - 1];
-        const offset = (typeof args[args.length - 1] === 'object') ? args[args.length - 3] : args[args.length - 2];
-        const captures = args.slice(0, (typeof args[args.length - 1] === 'object') ? args.length - 3 : args.length - 2);
-
-        let res = outPattern;
-        // $(name)
-        res = res.replace(/\$\(([a-zA-Z0-9_]+)\)/g, (_, name) => (namedGroups[name] !== undefined ? namedGroups[name] : ''));
-        // $`
-        res = res.replace(/\$`/g, fullString.slice(0, offset));
-        // $&
-        res = res.replace(/\$&/g, match);
-        // $1, $2, ...
-        res = res.replace(/\$([0-9]+)/g, (_, num) => {
-          const idx = parseInt(num, 10) - 1;
-          return captures[idx] !== undefined ? captures[idx] : '$' + num;
-        });
-        // $$ -> $
-        res = res.replace(/\$\$/g, '$');
-        return res;
-      });
-    } catch (err) {
-      console.warn('정규식 처리 중 오류:', err);
-      return text;
-    }
-  }
-
-  // 4가지 옵션에 따른 정규식 파이프라인 적용
-  function applyRegexPipeline(text, placementType) {
-    let result = text;
-    regexScripts.forEach(script => {
-      if (script.active && script.placement === placementType && script.in) {
-        result = applyCustomRegex(result, script.in, script.out || '');
-      }
-    });
-    return result;
-  }
-
-  // ----------------------------------------------------
-  // 트리거 스크립트 실행 엔진
+  // 트리거 스크립트 실행 엔진 (정규식/트리거 데이터 및 파이프라인은 상단에 선언됨)
   // ----------------------------------------------------
   function executeTrigger(triggerName) {
     const trigger = triggerScripts.find(t => t.triggerName === triggerName && t.active);
@@ -2748,25 +3156,250 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   // ==========================================
-  // 10. White Thought 아코디언 토글
-  // ==========================================
-  document.addEventListener('click', (e) => {
-    const thoughtHeader = e.target.closest('.thought-header');
-    if (thoughtHeader) {
-      const container = thoughtHeader.closest('.thought-container');
-      container.classList.toggle('collapsed');
-    }
-  });
-
-  // ==========================================
-  // 11. 메시지 전송 및 정규식/트리거/로어북/TTS 통합 파이프라인
+  // 11. 메시지 전송, 이미지/문서 드래그 앤 드롭(Vision), 타이머/리마인더 통합 파이프라인
   // ==========================================
   const chatInput = document.getElementById('chatInput');
   const btnSend = document.getElementById('btnSend');
+  const btnAttachFile = document.getElementById('btnAttachFile');
+  const chatFileInput = document.getElementById('chatFileInput');
+  const chatAttachmentPreviewBar = document.getElementById('chatAttachmentPreviewBar');
+  const dropZoneOverlay = document.getElementById('dropZoneOverlay');
+  const activeTimersBar = document.getElementById('activeTimersBar');
+
+  let pendingAttachments = [];
+
+  function renderAttachmentPreviews() {
+    if (!chatAttachmentPreviewBar) return;
+    chatAttachmentPreviewBar.innerHTML = '';
+    if (pendingAttachments.length === 0) {
+      chatAttachmentPreviewBar.classList.remove('has-items');
+      return;
+    }
+    chatAttachmentPreviewBar.classList.add('has-items');
+
+    pendingAttachments.forEach((att, idx) => {
+      const chip = document.createElement('div');
+      chip.className = 'attachment-chip';
+      const isImg = (att.mime_type || '').startsWith('image/');
+      const thumbHtml = isImg && att.data_base64
+        ? `<img src="${att.data_base64}" class="attachment-thumb" alt="${escapeHtml(att.name)}">`
+        : `<svg class="icon-svg-sm" viewBox="0 0 24 24" style="fill:#7dcfff;"><path d="M14 2H6c-1.1 0-1.99.9-1.99 2L4 20c0 1.1.89 2 1.99 2H18c1.1 0 2-.9 2-2V8l-6-6zm2 16H8v-2h8v2zm0-4H8v-2h8v2zm-3-5V3.5L18.5 9H13z"/></svg>`;
+      chip.innerHTML = `
+        ${thumbHtml}
+        <span class="attachment-name" title="${escapeHtml(att.name)}">${escapeHtml(att.name)}</span>
+        <button type="button" class="attachment-remove-btn" title="첨부 취소">✕</button>
+      `;
+      chip.querySelector('.attachment-remove-btn').addEventListener('click', () => {
+        pendingAttachments.splice(idx, 1);
+        renderAttachmentPreviews();
+      });
+      chatAttachmentPreviewBar.appendChild(chip);
+    });
+  }
+
+  function processAttachedFiles(fileList) {
+    if (!fileList || fileList.length === 0) return;
+    Array.from(fileList).forEach(file => {
+      const mime = file.type || (file.name.endsWith('.md') || file.name.endsWith('.txt') || file.name.endsWith('.py') || file.name.endsWith('.json') || file.name.endsWith('.csv') || file.name.endsWith('.log') ? 'text/plain' : 'application/octet-stream');
+      const isTextDoc = mime.startsWith('text/') || /\.(txt|md|py|js|ts|json|csv|html|css|log|xml|yaml|yml)$/i.test(file.name);
+
+      if (isTextDoc && !mime.startsWith('image/')) {
+        const reader = new FileReader();
+        reader.onload = (ev) => {
+          pendingAttachments.push({
+            name: file.name,
+            mime_type: mime || 'text/plain',
+            text_content: ev.target.result,
+            data_base64: ''
+          });
+          renderAttachmentPreviews();
+          showToast(`문서 첨부됨: ${file.name}`, 'info', 2000);
+        };
+        reader.readAsText(file, 'utf-8');
+      } else {
+        const reader = new FileReader();
+        reader.onload = (ev) => {
+          pendingAttachments.push({
+            name: file.name || `capture_${Date.now()}.png`,
+            mime_type: mime || 'image/png',
+            data_base64: ev.target.result,
+            text_content: null
+          });
+          renderAttachmentPreviews();
+          showToast(`파일 첨부됨: ${file.name || '캡처 이미지'}`, 'info', 2000);
+        };
+        reader.readAsDataURL(file);
+      }
+    });
+  }
+
+  // 파일 첨부 버튼 클릭
+  if (btnAttachFile && chatFileInput) {
+    btnAttachFile.addEventListener('click', () => chatFileInput.click());
+    chatFileInput.addEventListener('change', (e) => {
+      processAttachedFiles(e.target.files);
+      chatFileInput.value = '';
+    });
+  }
+
+  // 클립보드 캡처 이미지 붙여넣기 (Ctrl+V)
+  if (chatInput) {
+    chatInput.addEventListener('paste', (e) => {
+      const items = (e.clipboardData || window.clipboardData)?.items;
+      if (!items) return;
+      const files = [];
+      for (let i = 0; i < items.length; i++) {
+        if (items[i].kind === 'file') {
+          const f = items[i].getAsFile();
+          if (f) files.push(f);
+        }
+      }
+      if (files.length > 0) {
+        processAttachedFiles(files);
+      }
+    });
+  }
+
+  // 채팅창 드래그 앤 드롭 (이미지 & 문서)
+  if (mainChatSection) {
+    let dragCounter = 0;
+    mainChatSection.addEventListener('dragenter', (e) => {
+      if (e.dataTransfer && e.dataTransfer.types && Array.from(e.dataTransfer.types).includes('Files')) {
+        e.preventDefault();
+        dragCounter++;
+        if (dropZoneOverlay) dropZoneOverlay.classList.add('active');
+      }
+    });
+    mainChatSection.addEventListener('dragover', (e) => {
+      if (e.dataTransfer && e.dataTransfer.types && Array.from(e.dataTransfer.types).includes('Files')) {
+        e.preventDefault();
+        e.dataTransfer.dropEffect = 'copy';
+      }
+    });
+    mainChatSection.addEventListener('dragleave', (e) => {
+      if (e.dataTransfer && e.dataTransfer.types && Array.from(e.dataTransfer.types).includes('Files')) {
+        dragCounter--;
+        if (dragCounter <= 0) {
+          dragCounter = 0;
+          if (dropZoneOverlay) dropZoneOverlay.classList.remove('active');
+        }
+      }
+    });
+    mainChatSection.addEventListener('drop', (e) => {
+      dragCounter = 0;
+      if (dropZoneOverlay) dropZoneOverlay.classList.remove('active');
+      if (e.dataTransfer && e.dataTransfer.files && e.dataTransfer.files.length > 0) {
+        e.preventDefault();
+        processAttachedFiles(e.dataTransfer.files);
+      }
+    });
+  }
+
+  // ==========================================
+  // 11.1 백그라운드 타이머 & 리마인더 선제 알림 엔진
+  // ==========================================
+  let activeRemindersList = [];
+
+  function formatCountdown(sec) {
+    const s = Math.max(0, Math.floor(sec));
+    const hrs = Math.floor(s / 3600);
+    const mins = Math.floor((s % 3600) / 60);
+    const remSec = s % 60;
+    if (hrs > 0) {
+      return `${String(hrs).padStart(2, '0')}:${String(mins).padStart(2, '0')}:${String(remSec).padStart(2, '0')}`;
+    }
+    return `${String(mins).padStart(2, '0')}:${String(remSec).padStart(2, '0')}`;
+  }
+
+  function renderActiveTimersUI() {
+    if (!activeTimersBar) return;
+    if (!activeRemindersList || activeRemindersList.length === 0) {
+      activeTimersBar.innerHTML = '';
+      return;
+    }
+    const nowSec = Date.now() / 1000;
+    activeTimersBar.innerHTML = activeRemindersList.map(r => {
+      const rem = Math.max(0, Math.round((r.trigger_timestamp || 0) - nowSec));
+      return `
+        <div class="timer-pill" data-id="${escapeHtml(r.id)}">
+          <span>⏱</span>
+          <span class="timer-pill-countdown">${formatCountdown(rem)}</span>
+          <span>· ${escapeHtml(r.message)}</span>
+          <button type="button" class="timer-pill-cancel" data-id="${escapeHtml(r.id)}" title="타이머 취소">✕</button>
+        </div>
+      `;
+    }).join('');
+
+    activeTimersBar.querySelectorAll('.timer-pill-cancel').forEach(btn => {
+      btn.addEventListener('click', async (e) => {
+        e.stopPropagation();
+        const id = btn.dataset.id;
+        try {
+          await fetch(`/api/reminders/${id}`, { method: 'DELETE' });
+          activeRemindersList = activeRemindersList.filter(item => item.id !== id);
+          renderActiveTimersUI();
+          showToast('타이머/리마인더가 취소되었습니다.', 'info');
+        } catch (err) {}
+      });
+    });
+  }
+
+  function triggerProactiveReminderAlert(rem) {
+    const alertMsg = `⏰ **[선제적 알림]** 주인님, 요청하신 알림 시간이 되었습니다!\n- **내용:** ${rem.message}\n- **지정 시각:** ${rem.trigger_at_str || '방금'}`;
+    const thoughtMsg = `[선제적 타이머/리마인더 트리거 발동]\n- ID: ${rem.id}\n- 내용: ${rem.message}\n- 등록 시각: ${rem.created_at}`;
+
+    showToast(`⏰ [미노리 알림] ${rem.message}`, 'success', 7000);
+    renderMessageToViewport('assistant', alertMsg, thoughtMsg);
+
+    const ctx = getActiveChatContext();
+    saveCurrentChatMessages(ctx.chatId);
+    if (chatViewport) chatViewport.scrollTop = chatViewport.scrollHeight;
+
+    // 선제적 음성(TTS) 알림 즉시 발화
+    if (typeof speakMessage === 'function') {
+      speakMessage(`주인님, 요청하신 알림 시간입니다. ${rem.message}`);
+    }
+  }
+
+  async function syncRemindersFromBackend() {
+    try {
+      const res = await fetch('/api/reminders');
+      if (!res.ok) return;
+      const data = await res.json();
+      activeRemindersList = data.active || [];
+      renderActiveTimersUI();
+      if (Array.isArray(data.due) && data.due.length > 0) {
+        data.due.forEach(rem => triggerProactiveReminderAlert(rem));
+      }
+    } catch (e) {}
+  }
+
+  // 1초마다 카운트다운 갱신 및 도래한 타이머 즉시 감지
+  setInterval(() => {
+    if (activeRemindersList.length > 0) {
+      const nowSec = Date.now() / 1000;
+      const anyExpired = activeRemindersList.some(r => nowSec >= (r.trigger_timestamp || 0));
+      renderActiveTimersUI();
+      if (anyExpired) {
+        syncRemindersFromBackend();
+      }
+    }
+  }, 1000);
+
+  // 5초마다 백엔드 알림 상태 동기화
+  setInterval(syncRemindersFromBackend, 5000);
+  setTimeout(syncRemindersFromBackend, 800);
 
   function sendMessage() {
     let rawText = chatInput.value.trim();
-    if (!rawText) return;
+    if (!rawText && pendingAttachments.length === 0) return;
+    if (!rawText && pendingAttachments.length > 0) {
+      rawText = '첨부된 이미지/문서를 상세히 분석하고 설명해 주세요.';
+    }
+
+    const currentAttachments = [...pendingAttachments];
+    pendingAttachments = [];
+    renderAttachmentPreviews();
 
     saveCurrentLorebookDOMToStore();
 
@@ -2782,8 +3415,20 @@ document.addEventListener('DOMContentLoaded', () => {
     const ctx = getActiveChatContext();
     const activeChatId = ctx.chatId;
 
+    // 첨부 이미지/문서가 있으면 사용자 메시지 말풍선에도 시각적으로 표시
+    let userDisplayMarkdown = modifiedUserInput;
+    if (currentAttachments.length > 0) {
+      const attLines = currentAttachments.map(att => {
+        if ((att.mime_type || '').startsWith('image/') && att.data_base64) {
+          return `![${att.name}](${att.data_base64})`;
+        }
+        return `📎 \`[첨부 문서: ${att.name}]\``;
+      });
+      userDisplayMarkdown = attLines.join('\n') + '\n' + modifiedUserInput;
+    }
+
     // 사용자 메시지 화면 렌더링
-    renderMessageToViewport('user', modifiedUserInput, null);
+    renderMessageToViewport('user', userDisplayMarkdown, null);
     chatInput.value = '';
 
     // 로어북 스코프 검사 및 최대 토큰 초과 필터링
@@ -2846,7 +3491,8 @@ document.addEventListener('DOMContentLoaded', () => {
             message: requestPayloadText,
             chat_id: activeChatId,
             lorebook_context: lorebookReport,
-            system_rules: typeof getActiveModulePrompts === 'function' ? getActiveModulePrompts() : ''
+            system_rules: typeof getActiveModulePrompts === 'function' ? getActiveModulePrompts() : '',
+            attachments: currentAttachments.length > 0 ? currentAttachments : undefined
           })
         });
 
@@ -2857,6 +3503,11 @@ document.addEventListener('DOMContentLoaded', () => {
         const data = await response.json();
         const agentReplyRaw = data.reply || '작업이 완료되었습니다, 주인님.';
         const agentThoughts = (data.thoughts ? data.thoughts + '\n\n' : '') + lorebookReport;
+
+        // 새 타이머/리마인더가 등록된 경우 즉시 상단 카운트다운 동기화
+        if (Array.isArray(data.created_reminders) && data.created_reminders.length > 0) {
+          syncRemindersFromBackend();
+        }
 
         // 5단계: '출력문 수정' 정규식 적용
         let modifiedReply = applyRegexPipeline(agentReplyRaw, 'output');
@@ -2903,7 +3554,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // ==========================================
   // ==========================================
-  // 12. AI 모델 & 다중 제공자(Multi-Provider) API 설정 패널 바인딩
+  // 12. AI 모델 & 다중 제공자(Multi-Provider) & 로컬 Ollama & 플러그인 설정 바인딩
   // ==========================================
   const geminiApiKeyInput = document.getElementById('geminiApiKeyInput');
   const btnToggleGeminiKey = document.getElementById('btnToggleGeminiKey');
@@ -2917,6 +3568,92 @@ document.addEventListener('DOMContentLoaded', () => {
   const apiConnectionStatusBox = document.getElementById('apiConnectionStatusBox');
   const btnTestApiConnection = document.getElementById('btnTestApiConnection');
   const btnSaveApiSettings = document.getElementById('btnSaveApiSettings');
+  const ollamaModelsBox = document.getElementById('ollamaModelsBox');
+  const pluginsStatusBox = document.getElementById('pluginsStatusBox');
+  const btnRefreshPlugins = document.getElementById('btnRefreshPlugins');
+
+  // 로컬 Ollama 서버 상태 및 설치된 모델 스캔
+  async function checkLocalOllamaModels() {
+    if (!ollamaModelsBox) return;
+    ollamaModelsBox.style.display = 'block';
+    ollamaModelsBox.innerHTML = '<span>🦙 로컬 PC의 Ollama 서버(localhost:11434)를 스캔하는 중...</span>';
+    try {
+      const res = await fetch('/api/ollama/models');
+      const data = await res.json();
+      if (data.status === 'online') {
+        const models = data.models || [];
+        if (models.length > 0) {
+          const chipsHtml = models.map(m =>
+            `<button type="button" class="preset-chip ollama-local-chip" data-model="${escapeHtml(m.name)}">🦙 ${escapeHtml(m.name)} (${m.size_gb}GB)</button>`
+          ).join(' ');
+          ollamaModelsBox.innerHTML = `
+            <div style="font-weight:700; color:#10b981; margin-bottom:6px;">● 로컬 Ollama 서버 온라인 (완전 오프라인 GPU 구동 가능 / API 키 불필요)</div>
+            <div style="margin-bottom:4px; color:var(--text-muted);">설치된 로컬 모델 (클릭 시 선택):</div>
+            <div class="model-preset-chips">${chipsHtml}</div>
+          `;
+          ollamaModelsBox.querySelectorAll('.ollama-local-chip').forEach(btn => {
+            btn.addEventListener('click', () => {
+              const chosen = btn.dataset.model;
+              if (modelNameInput) modelNameInput.value = chosen;
+              if (activeModelBadge) activeModelBadge.textContent = chosen;
+              if (customEndpointInput) customEndpointInput.value = 'http://localhost:11434/v1';
+            });
+          });
+          if (modelNameInput && modelNameInput.value === 'ollama') {
+            modelNameInput.value = models[0].name;
+            if (activeModelBadge) activeModelBadge.textContent = models[0].name;
+          }
+        } else {
+          ollamaModelsBox.innerHTML = `
+            <div style="font-weight:700; color:#e0af68;">● Ollama 서버는 실행 중이나 설치된 모델이 없습니다.</div>
+            <div style="color:var(--text-muted); margin-top:4px;">터미널에서 <code>ollama pull gemma3</code> 또는 <code>ollama pull llama3.2</code>를 실행해 모델을 받아주세요.</div>
+          `;
+        }
+      } else {
+        ollamaModelsBox.innerHTML = `
+          <div style="font-weight:700; color:#f7768e;">○ 로컬 Ollama 서버 미실행 (오프라인 모드 안내)</div>
+          <div style="color:var(--text-muted); margin-top:4px; line-height:1.5;">
+            인터넷이나 API 키 없이 내 PC GPU로만 구동하려면 <a href="https://ollama.com" target="_blank" class="md-link">Ollama</a>를 실행한 뒤 <code>ollama run gemma3</code> 또는 <code>ollama serve</code>를 켜주세요.<br>
+            * 엔드포인트가 <code>http://localhost:11434/v1</code>로 자동 설정되었습니다.
+          </div>
+        `;
+      }
+    } catch (e) {
+      ollamaModelsBox.innerHTML = '<span style="color:#f7768e;">Ollama 상태를 확인할 수 없습니다.</span>';
+    }
+  }
+
+  // plugins/ 폴더 커스텀 도구 스캔 표시
+  async function loadCustomPluginsStatus() {
+    if (!pluginsStatusBox) return;
+    try {
+      const res = await fetch('/api/plugins');
+      if (!res.ok) return;
+      const data = await res.json();
+      const plugins = data.plugins || [];
+      if (plugins.length === 0) {
+        pluginsStatusBox.innerHTML = '현재 <code>plugins/</code> 폴더에 등록된 파이썬(.py) 파일이 없습니다.';
+        return;
+      }
+      pluginsStatusBox.innerHTML = plugins.map(p => {
+        if (p.status === 'loaded') {
+          const toolList = (p.tools || []).map(t => `<code class="inline-code">${escapeHtml(t.signature)}</code> (${escapeHtml(t.description)})`).join('<br>  └ ');
+          return `<div style="margin-bottom:4px;"><span style="color:#10b981; font-weight:700;">✔ ${escapeHtml(p.file)}</span><br>  └ ${toolList || '함수 없음'}</div>`;
+        }
+        return `<div style="color:#f7768e;">✖ ${escapeHtml(p.file)}: 오류 (${escapeHtml(p.error || '')})</div>`;
+      }).join('');
+    } catch (e) {
+      pluginsStatusBox.innerHTML = '플러그인 목록을 불러오지 못했습니다.';
+    }
+  }
+
+  if (btnRefreshPlugins) {
+    btnRefreshPlugins.addEventListener('click', () => {
+      loadCustomPluginsStatus();
+      showToast('plugins/ 폴더의 커스텀 도구를 다시 스캔했습니다.', 'success');
+    });
+  }
+  loadCustomPluginsStatus();
 
   // 프리셋 칩 활성화 상태 동기화
   function syncPresetChips(modelName) {
@@ -2936,6 +3673,12 @@ document.addEventListener('DOMContentLoaded', () => {
       modelNameInput.value = model;
       if (activeModelBadge) activeModelBadge.textContent = model;
       syncPresetChips(model);
+      if (model === 'ollama') {
+        if (customEndpointInput) customEndpointInput.value = 'http://localhost:11434/v1';
+        checkLocalOllamaModels();
+      } else if (ollamaModelsBox) {
+        ollamaModelsBox.style.display = 'none';
+      }
     });
   }
 
@@ -3134,13 +3877,98 @@ document.addEventListener('DOMContentLoaded', () => {
             <button class="btn-mem-toggle ${isActive ? 'active' : ''}" data-id="${escapeHtml(mem.id)}" data-active="${isActive}">
               ${isActive ? '● 활성' : '○ 비활성'}
             </button>
-            <button class="btn-mem-delete" data-id="${escapeHtml(mem.id)}" title="기억 삭제">
+            <button class="btn-icon-action btn-mem-edit" data-id="${escapeHtml(mem.id)}" title="기억 수정">
+              <svg class="icon-svg-sm" viewBox="0 0 24 24" style="width:14px;height:14px;"><path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04c.39-.39.39-1.02 0-1.41l-2.34-2.34c-.39-.39-1.02-.39-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z"/></svg>
+            </button>
+            <button class="btn-icon-action danger btn-mem-delete" data-id="${escapeHtml(mem.id)}" title="기억 삭제">
               <svg class="icon-svg-sm" viewBox="0 0 24 24" style="width:14px;height:14px;"><path d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"/></svg>
             </button>
           </div>
         </div>
       `;
     }).join('');
+
+    // 수정 버튼 핸들러 바인딩 (인라인 에디터 토글)
+    hyperMemoryList.querySelectorAll('.btn-mem-edit').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const memCard = btn.closest('.memory-card');
+        if (!memCard) return;
+
+        const existingEditor = memCard.querySelector('.inline-mem-editor');
+        if (existingEditor) {
+          // 이미 열려 있으면 저장 실행
+          const saveBtn = existingEditor.querySelector('.btn-save-mem-edit');
+          if (saveBtn) saveBtn.click();
+          return;
+        }
+
+        const memId = btn.dataset.id;
+        const memObj = memories.find(m => m.id === memId);
+        if (!memObj) return;
+
+        const bodyEl = memCard.querySelector('.memory-card-body');
+        if (bodyEl) bodyEl.style.display = 'none';
+
+        const editorDiv = document.createElement('div');
+        editorDiv.className = 'inline-mem-editor';
+        editorDiv.style.cssText = 'padding: 8px; background: rgba(20, 24, 38, 0.95); border: 1px solid var(--border-color); border-radius: 4px; display: flex; flex-direction: column; gap: 6px; width: 100%;';
+        editorDiv.innerHTML = `
+          <div style="display: flex; gap: 6px;">
+            <select class="dark-input edit-mem-cat" style="font-size: 11px; width: 130px;">
+              <option value="비서 지침" ${memObj.category === '비서 지침' ? 'selected' : ''}>비서 지침</option>
+              <option value="사용자 성향" ${memObj.category === '사용자 성향' ? 'selected' : ''}>사용자 성향</option>
+              <option value="작업 환경" ${memObj.category === '작업 환경' ? 'selected' : ''}>작업 환경</option>
+              <option value="프로젝트 규칙" ${memObj.category === '프로젝트 규칙' ? 'selected' : ''}>프로젝트 규칙</option>
+              <option value="중요 메모" ${memObj.category === '중요 메모' ? 'selected' : ''}>중요 메모</option>
+            </select>
+            <input type="text" class="dark-input edit-mem-content" value="${escapeHtml(memObj.content)}" style="flex: 1; font-size: 11px;">
+          </div>
+          <div style="display: flex; justify-content: flex-end; gap: 6px;">
+            <button type="button" class="btn-solid-secondary btn-cancel-mem-edit" style="padding: 3px 10px; font-size: 10px;">취소</button>
+            <button type="button" class="btn-solid-primary btn-save-mem-edit" style="padding: 3px 12px; font-size: 10px;">저장</button>
+          </div>
+        `;
+
+        memCard.insertBefore(editorDiv, memCard.querySelector('.memory-actions'));
+        btn.classList.add('active');
+
+        const cleanupMemEditor = () => {
+          editorDiv.remove();
+          if (bodyEl) bodyEl.style.display = '';
+          btn.classList.remove('active');
+        };
+
+        editorDiv.querySelector('.btn-cancel-mem-edit').onclick = cleanupMemEditor;
+
+        editorDiv.querySelector('.btn-save-mem-edit').onclick = async () => {
+          const newCat = editorDiv.querySelector('.edit-mem-cat').value;
+          const newContent = editorDiv.querySelector('.edit-mem-content').value.trim();
+          if (!newContent) {
+            showToast('기억 내용을 입력해 주세요.', 'warn');
+            return;
+          }
+
+          try {
+            const res = await fetch(`/api/memory/${memId}`, {
+              method: 'PUT',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ category: newCat, content: newContent })
+            });
+
+            if (!res.ok) {
+              const errData = await res.json().catch(() => ({}));
+              throw new Error(errData.detail || '기억 수정 실패');
+            }
+
+            showToast('장기 기억이 성공적으로 수정되었습니다.', 'success');
+            cleanupMemEditor();
+            loadHyperMemories();
+          } catch (err) {
+            showToast('수정 오류: ' + err.message, 'error');
+          }
+        };
+      });
+    });
 
     // 토글 버튼 핸들러 바인딩
     hyperMemoryList.querySelectorAll('.btn-mem-toggle').forEach(btn => {
@@ -3240,24 +4068,76 @@ document.addEventListener('DOMContentLoaded', () => {
   const btnVoiceInput = document.getElementById('btnVoiceInput');
   const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
 
+  let savedSttModel = localStorage.getItem('minori_stt_model') || 'gemini-3.8-flash';
+  if (savedSttModel.includes('2.5')) {
+    savedSttModel = 'gemini-3.8-flash';
+    localStorage.setItem('minori_stt_model', savedSttModel);
+  }
+
   let sttSettings = {
     provider: localStorage.getItem('minori_stt_provider') || 'webspeech',
+    model: savedSttModel,
     prompt: localStorage.getItem('minori_stt_prompt') || '미노리, MINORI, 자비스, 인공지능 비서',
     autoSend: localStorage.getItem('minori_stt_autosend') !== 'false'
   };
 
   const sttProviderSelect = document.getElementById('sttProviderSelect');
+  const sttGeminiModelGroup = document.getElementById('sttGeminiModelGroup');
+  const sttGeminiModelSelect = document.getElementById('sttGeminiModelSelect');
+  const sttGeminiCustomModelInput = document.getElementById('sttGeminiCustomModelInput');
   const sttPromptInput = document.getElementById('sttPromptInput');
   const sttAutoSendCheck = document.getElementById('sttAutoSendCheck');
   const sttOpenAiKeyGroup = document.getElementById('sttOpenAiKeyGroup');
 
+  function updateSttUiState() {
+    if (sttOpenAiKeyGroup) sttOpenAiKeyGroup.style.display = (sttSettings.provider === 'whisper') ? 'block' : 'none';
+    if (sttGeminiModelGroup) sttGeminiModelGroup.style.display = (sttSettings.provider === 'gemini') ? 'block' : 'none';
+  }
+
   if (sttProviderSelect) {
     sttProviderSelect.value = sttSettings.provider;
-    if (sttOpenAiKeyGroup) sttOpenAiKeyGroup.style.display = (sttSettings.provider === 'whisper') ? 'block' : 'none';
+    updateSttUiState();
     sttProviderSelect.addEventListener('change', () => {
       sttSettings.provider = sttProviderSelect.value;
       localStorage.setItem('minori_stt_provider', sttSettings.provider);
-      if (sttOpenAiKeyGroup) sttOpenAiKeyGroup.style.display = (sttSettings.provider === 'whisper') ? 'block' : 'none';
+      updateSttUiState();
+    });
+  }
+
+  if (sttGeminiModelSelect) {
+    const knownModels = ['gemini-3.8-flash', 'gemini-3.6-flash', 'gemini-4-argon'];
+    if (knownModels.includes(sttSettings.model)) {
+      sttGeminiModelSelect.value = sttSettings.model;
+      if (sttGeminiCustomModelInput) sttGeminiCustomModelInput.style.display = 'none';
+    } else {
+      sttGeminiModelSelect.value = 'custom';
+      if (sttGeminiCustomModelInput) {
+        sttGeminiCustomModelInput.value = sttSettings.model;
+        sttGeminiCustomModelInput.style.display = 'block';
+      }
+    }
+
+    sttGeminiModelSelect.addEventListener('change', () => {
+      if (sttGeminiModelSelect.value === 'custom') {
+        if (sttGeminiCustomModelInput) {
+          sttGeminiCustomModelInput.style.display = 'block';
+          sttGeminiCustomModelInput.focus();
+        }
+      } else {
+        if (sttGeminiCustomModelInput) sttGeminiCustomModelInput.style.display = 'none';
+        sttSettings.model = sttGeminiModelSelect.value;
+        localStorage.setItem('minori_stt_model', sttSettings.model);
+      }
+    });
+  }
+
+  if (sttGeminiCustomModelInput) {
+    sttGeminiCustomModelInput.addEventListener('input', () => {
+      const val = sttGeminiCustomModelInput.value.trim();
+      if (val) {
+        sttSettings.model = val;
+        localStorage.setItem('minori_stt_model', val);
+      }
     });
   }
 
@@ -3369,6 +4249,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
   function startVoiceListening() {
     try {
+      stopTts(); // 마이크 활성화 시 이전 TTS 음성 즉시 차단
       if (speechSilenceTimer) clearTimeout(speechSilenceTimer);
       if (chatInput) chatInput.value = '';
       if (recognition) recognition.start();
@@ -3396,6 +4277,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
   async function startAudioRecording() {
     try {
+      stopTts(); // 녹음 시작 시 TTS 음성 즉시 차단
       const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
       audioChunks = [];
       mediaRecorder = new MediaRecorder(stream);
@@ -3412,7 +4294,8 @@ document.addEventListener('DOMContentLoaded', () => {
           return;
         }
 
-        if (statusIndicator) statusIndicator.textContent = `고정밀 음성 전사 중... (${sttSettings.provider.toUpperCase()})`;
+        const modelLabel = sttSettings.provider === 'gemini' ? (sttSettings.model || 'gemini-3.8-flash') : sttSettings.provider.toUpperCase();
+        if (statusIndicator) statusIndicator.textContent = `고정밀 음성 전사 중... (${modelLabel})`;
         const cyberCore = document.getElementById('cyberCore');
         if (cyberCore) cyberCore.classList.add('thinking');
 
@@ -3421,6 +4304,9 @@ document.addEventListener('DOMContentLoaded', () => {
           formData.append('audio', audioBlob, 'voice.webm');
           formData.append('engine', sttSettings.provider);
           formData.append('prompt', sttSettings.prompt || '미노리, MINORI, 자비스');
+          if (sttSettings.provider === 'gemini') {
+            formData.append('model', sttSettings.model || 'gemini-3.8-flash');
+          }
 
           const res = await fetch('/api/stt', {
             method: 'POST',
@@ -3456,11 +4342,12 @@ document.addEventListener('DOMContentLoaded', () => {
 
       mediaRecorder.start();
       isMediaRecording = true;
+      const modelLabel = sttSettings.provider === 'gemini' ? (sttSettings.model || 'gemini-3.8-flash') : sttSettings.provider.toUpperCase();
       if (btnVoiceInput) {
         btnVoiceInput.classList.add('listening');
-        btnVoiceInput.title = `녹음 중... (${sttSettings.provider.toUpperCase()} 고정밀, 클릭 시 완료)`;
+        btnVoiceInput.title = `녹음 중... (${modelLabel} 고정밀, 클릭 시 완료)`;
       }
-      if (statusIndicator) statusIndicator.textContent = `음성 녹음 중... (${sttSettings.provider.toUpperCase()} 모드, 완료 시 클릭)`;
+      if (statusIndicator) statusIndicator.textContent = `음성 녹음 중... (${modelLabel} 모드, 완료 시 클릭)`;
       const cyberCore = document.getElementById('cyberCore');
       if (cyberCore) cyberCore.classList.add('listening');
 
@@ -3511,12 +4398,12 @@ document.addEventListener('DOMContentLoaded', () => {
   // 14. 모듈 관리 시스템 (설정 탭 내 로어북형 카드 에디터)
   // ==========================================
   const DEFAULT_MODULES = [
-    { id: 'mod_lang_ko', name: '언어: 한국어 응답 (Korean)', prompt: 'Always formulate all final responses in natural, polite Korean (한국어). Respectfully address the user as "주인님" (Master).', enabled: true },
-    { id: 'mod_lang_en', name: '언어: 영어 응답 (English)', prompt: 'Always formulate all final responses in fluent, professional, polite English. Respectfully address the user as "Sir" or "Master".', enabled: false },
-    { id: 'mod_lang_ja', name: '언어: 일본어 응답 (Japanese)', prompt: 'Always formulate all final responses in natural, polite Japanese (丁寧語/デス・マス調). Respectfully address the user as "ご主人様" (Goshujin-sama).', enabled: false },
+    { id: 'mod_lang_ko', name: '언어: 한국어 응답 (Korean)', prompt: 'Always formulate final responses in natural, engaging, polite spoken Korean (한국어 존댓말) as an attentive personal secretary. Respectfully address the user as "주인님".', enabled: true },
+    { id: 'mod_lang_en', name: '언어: 영어 응답 (English)', prompt: 'Always formulate final responses in polished, fluent, and polite spoken English as an attentive personal secretary. Respectfully address the user as "Sir" or "Master".', enabled: false },
+    { id: 'mod_lang_ja', name: '언어: 일본어 응답 (Japanese)', prompt: 'Always formulate final responses in natural, graceful, and polite Japanese (丁寧語/デス・マス調) as an attentive personal secretary. Respectfully address the user as "ご主人様" (Goshujin-sama).', enabled: false },
     { id: 'mod_search', name: '주도적 파일 탐색', prompt: 'Actively explore and analyze relevant files and directories within allowed workspaces when assisting the user.', enabled: true },
     { id: 'mod_safety', name: '비파괴 저장 원칙', prompt: 'Prioritize non-destructive file operations and safety before modifying or overwriting existing files.', enabled: true },
-    { id: 'mod_creative', name: '자비스 비서 모드', prompt: 'Maintain a refined, capable, calm, and loyal AI secretary persona inspired by J.A.R.V.I.S.', enabled: true },
+    { id: 'mod_creative', name: '자비스 비서 모드', prompt: 'Maintain an authentic, living roleplay dialogue as a loyal personal secretary. Speak naturally as if conversing face-to-face, avoiding rigid disclaimers or detached monologue.', enabled: true },
     { id: 'mod_summary', name: '핵심 요약 모드', prompt: 'Be concise. Present information using bullet points and structured summaries, minimizing unnecessary preambles.', enabled: false }
   ];
 
@@ -3752,4 +4639,35 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // 초기 설정 로드 실행
   loadBackendApiSettings();
+
+  // ==========================================
+  // 최종 초기화: 저장된 세션 트리 및 이전 대화 세션 복원
+  // ==========================================
+  try {
+    const restoredTree = restoreSessionTreeFromStorage();
+    if (!restoredTree) {
+      let initialActive = sessionTree ? sessionTree.querySelector('.session-item.active') : null;
+      if (!initialActive && sessionTree) {
+        initialActive = sessionTree.querySelector('.session-item');
+      }
+      if (initialActive) {
+        const activeId = initialActive.dataset.chatId;
+        const title = initialActive.querySelector('.session-name').textContent.trim();
+        loadChatMessages(activeId, title);
+        saveSessionTreeToStorage();
+      } else {
+        loadChatMessages('chat_default', '미노리 시작 가이드');
+      }
+    }
+    if (typeof renderLorebookView === 'function') {
+      renderLorebookView();
+    }
+  } catch (err) {
+    console.error('초기 세션 트리/대화 복원 중 오류:', err);
+    try {
+      loadChatMessages('chat_default', '미노리 시작 가이드');
+    } catch (e) {
+      console.error('시작 가이드 로드 실패:', e);
+    }
+  }
 });

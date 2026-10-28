@@ -1,12 +1,13 @@
-# 🌌 MINORI (미노리)
-> **개인 자율형 디지털 비서 (Autonomous Personal Digital Secretary)**  
-> *"아이언맨의 자비스(J.A.R.V.I.S)처럼, 당신의 일상과 로컬 PC 환경을 스스로 보조하는 지능형 파트너"*
+# 🌌 MINORI (미노리) v2.0
+> **자율형 개인 디지털 비서 (Autonomous Personal Digital Secretary)**  
+> *"아이언맨의 자비스(J.A.R.V.I.S.)처럼, 당신의 일상과 로컬 PC 환경을 스스로 보조하고 실행하는 지능형 파트너"*
 
 <div align="center">
 
 ![Python](https://img.shields.io/badge/Python-3.10%2B-blue?logo=python)
 ![FastAPI](https://img.shields.io/badge/FastAPI-0.110%2B-009688?logo=fastapi)
-![Google Gemini](https://img.shields.io/badge/Google%20Gemini-2.5%20Flash%20%7C%20Pro-4285F4?logo=google)
+![Google Gemini](https://img.shields.io/badge/Google%20Gemini-3.8%20Flash%20%7C%204%20Argon-4285F4?logo=google)
+![Ollama](https://img.shields.io/badge/Ollama-Local%20Offline%20LLM-000000?logo=ollama)
 ![Whisper](https://img.shields.io/badge/OpenAI-Whisper%20STT-412991?logo=openai)
 ![Vanilla JS](https://img.shields.io/badge/Frontend-Vanilla%20JS%20%26%20CSS-F7DF1E?logo=javascript)
 ![License](https://img.shields.io/badge/License-MIT-green)
@@ -17,90 +18,87 @@
 
 ## 💡 프로젝트 소개 (Overview)
 
-**MINORI(미노리)**는 웹 브라우저 안에서 단순한 질의응답만 반복하는 일반적인 챗봇의 한계를 넘어, **사용자의 로컬 PC 환경을 직접 인지하고, 음성으로 대화하며, 자율적으로 도구(Tools)를 실행하여 작업을 대신 완수하는 지능형 AI 비서 시스템**입니다.
+**MINORI(미노리)**는 웹 브라우저 안에서 단순한 질의응답만 반복하는 일반적인 챗봇의 한계를 넘어, **사용자의 로컬 PC 환경을 직접 인지하고, 음성으로 대화하며, 시각(Vision) 분석·이미지 제작·실시간 검색·타이머·플러그인 도구를 자율적으로 실행하여 작업을 완수하는 지능형 AI 비서 시스템**입니다.
 
-사이버펑크 감성의 반응형 **사이버 코어(Cyber Core)** 인터페이스를 기반으로, 브라우저 기본 경고창(`alert`) 없는 현대적인 인터랙션, 로어북(Lorebook) & 모듈형 규칙 주입 엔진, 정규식/트리거 매크로 파이프라인, 그리고 고정밀 음성 인식(STT)과 합성(TTS)을 완벽하게 통합했습니다.
+사이버펑크 감성의 반응형 **사이버 코어(Cyber Core)** 인터페이스를 기반으로, 브라우저 기본 경고창(`alert`) 없는 현대적인 인터랙션, 하이퍼 메모리(장기 기억), 로어북(Lorebook) & 모듈형 규칙 주입 엔진, 정규식/트리거 매크로 파이프라인, 고정밀 음성 인식(STT)과 합성(TTS), 그리고 완전 오프라인 로컬 LLM(Ollama) 구동까지 하나로 통합했습니다.
 
 ---
 
 ## ✨ 핵심 기능 (Key Features)
 
-### 1. 🎙️ 자율 음성 상호작용 (Dual-Engine STT & Multilingual TTS)
-- **실시간 음향 교정 필터 (Web Speech API)**: 고유명사 '미노리'를 '며느리', '미누리' 등으로 오인식하는 음향 편차를 실시간으로 100% 감지 및 자동 교정.
-- **고정밀 멀티모달 STT (Google Gemini 2.5 Audio & OpenAI Whisper)**: 마이크 오디오를 고정밀 AI 모델에 전송하여 잡음 환경이나 전문 용어도 단어 힌트(Prompt Keywords)를 바탕으로 완벽하게 전사.
-- **다국어 TTS 음성 합성**: Web Speech API, OpenAI TTS(`tts-1`, `tts-1-hd`), ElevenLabs, Google Cloud TTS 연동 및 음높이/속도 실시간 제어.
+### 1. 🖼️ 멀티모달 Vision 분석 & 채팅창 이미지 제작
+- **드래그 앤 드롭 & `Ctrl+V` 캡처 붙여넣기**: 캡처 스크린샷, 사진, 에러 화면, 텍스트/코드/PDF 문서를 채팅창에 끌어다 놓으면 미노리가 즉시 화면 판독 및 문서 분석을 수행.
+- **워크스페이스 이미지 시각 분석 (`inspect_workspace_image`)**: 로컬 작업 폴더 내 이미지 파일(`png`, `jpg`, `webp` 등)의 도표, OCR 텍스트, 레이아웃을 정밀 분석.
+- **이미지 제작 및 인라인 뷰어 (`generate_image`)**: 자연어 요청으로 이미지를 생성(Google Imagen 3 및 고해상도 아트워크 엔진)하여 채팅창 말풍선 안에 즉시 출력 및 라이트박스 확대/다운로드 지원.
 
-### 2. 🛠️ 로컬 자율 도구 실행 (Agentic Tool Calling Loop)
-- 사용자의 자연어 지시를 해석하여 **로컬 파일 탐색, 읽기, 생성, 수정, 백업, 시스템 시간 확인** 등의 도구를 스스로 판단하여 순차 실행.
-- **White Thought 시스템**: 비서의 사고 과정, 도구 판단 로직, 실행 결과를 대화 풍선 내부의 접이식 카드로 투명하게 브리핑.
+### 2. 🌐 실시간 기상 · URL 웹페이지 리더 · 무료 웹/뉴스 검색
+- **실시간 기상 관측 (`get_realtime_weather`)**: 별도 API 키 없이 Open-Meteo 기상망을 통해 국내외 도시의 실시간 기온, 체감 온도, 습도, 최고/최저 기온, 강수 확률을 즉각 브리핑.
+- **URL 본문 리더 (`read_webpage_url`)**: 뉴스나 블로그, 기술 문서 링크(URL)의 본문을 추출하여 핵심 요약 수행.
+- **무료 실시간 웹/뉴스 검색 (`search_web_duckduckgo`)**: DuckDuckGo 웹 검색 및 실시간 뉴스 RSS를 결합하여 최신 정보 검색.
 
-### 3. 📚 로어북 & 모듈형 규칙 관리 (Lorebook & Dynamic Modules)
-- **계층형 로어북 시스템**: 폴더별 정리, 키워드 기반 동적 주입, 토큰 상한선(Token Limit) 자동 제어.
-- **모듈형 프롬프트 에디터**: *"주도적 파일 탐색"*, *"비파괴 저장 원칙"*, *"자비스 비서 어조"*, *"핵심 요약 브리핑"* 등 원하는 행동 규칙을 카드 형태로 On/Off 토글 및 직접 커스텀 추가/편집.
+### 3. ⏰ 선제적 타이머 & 리마인더 (Proactive Notifications)
+- *"10분 뒤에 알려줘"*, *"30초 뒤에 스트레칭하라고 알려줘"*, *"15:30에 회의 알려줘"* 등 자연어로 타이머/리마인더 등록.
+- 상단 프로필 바에 **실시간 카운트다운 배지(`⏱ 09:42 · 스트레칭`)** 표시 및 지정 시각 도래 시 **채팅 메시지 + 사이버 토스트 + 음성(TTS)**으로 먼저 알림 수행.
 
-### 4. ⚡ 정규식 매크로 & 트리거 스크립트 (Regex & Trigger Engine)
-- **4단계 정규식 파이프라인**: `Input`(입력 전), `Output`(답변 생성 후), `Request`(API 전송 직전), `Display`(화면 표시 시) 텍스트를 실시간 치환.
-- **버튼 트리거 매크로**: `{{button::라벨::트리거명}}` 문법 지원, 원클릭 인터랙티브 작업 자동화.
+### 4. 🔌 `plugins/` 폴더 기반 무중단 커스텀 도구 확장
+- `plugins/` 폴더에 파이썬 파일(`.py`) 하나만 넣으면 **서버 재시작 없이(Hot-Reload)** 미노리가 새로운 기술(Function Calling 도구)로 자동 인식하여 즉시 사용.
+- 기본 제공 플러그인: `plugins/pc_system_status.py` (로컬 PC의 RAM 메모리 점유율, 디스크 여유 공간, OS/아키텍처 실시간 진단).
 
-### 5. 🖥️ 대화면 설정 대시보드 & 사이버 코어 UI
-- **드래그 조절형 스플릿 레이아웃**: 마우스 드래그로 사이드바 너비를 200px ~ 650px까지 부드럽게 조절(재접속 시 자동 기억).
-- **메인 설정 대시보드**: 비좁은 사이드바가 아닌 메인 영역 전체에서 시원하게 AI 모델, 로어북, 모듈, 음성 설정을 한눈에 관리.
-- **마크다운 & 수식($) & 원클릭 코드 복사**: 풍부한 서식과 KaTeX 스타일 수식 렌더링 지원.
-- **Zero-Alert / Pure SVG**: 조잡한 유니코드 이모티콘을 전면 배제하고 정제된 모노크롬 SVG 및 사이버 토스트/모달 다이얼로그 탑재.
+### 5. 🧠 하이퍼 메모리 (Hyper Memory Engine)
+- 대화 중 중요한 사용자 성향, 프로젝트 규칙, 장기 지침을 미노리가 스스로 판단하여 영구 저장(`logged_save_hyper_memory`)하거나 기존 기억을 자율 수정(`logged_update_hyper_memory`).
+- 설정 대시보드에서 기억 항목의 실시간 추가, 인라인 수정, 활성/비활성 토글, 삭제 지원.
+
+### 6. 🦙 로컬 LLM (Ollama) 완전 오프라인 무료 연동
+- **[설정] ➔ [AI 모델 & API 설정]**에서 `🦙 Ollama / 로컬 LLM` 프리셋 선택 시, API 키나 인터넷 연결 없이 내 PC GPU(`http://localhost:11434/v1`)로만 동작하는 완전 오프라인 모드 지원 및 설치된 로컬 모델 자동 스캔.
+
+### 7. 🎙️ 자율 음성 상호작용 (STT & TTS) & 토큰/캐시 인스펙터
+- **고정밀 STT**: 브라우저 실시간 Web Speech API(미노리 음향 오인식 자동 교정 필터 탑재), **Google Gemini 3.8 Flash Audio STT**, **OpenAI Whisper-1** 지원.
+- **자연스러운 문장 청킹 TTS**: 장문 답변도 쉼표 끊김(GC) 없이 끝까지 매끄럽게 낭독.
+- **White Thought 토큰 & 캐시 인스펙터**: 각 응답의 **Input 토큰 / Output 토큰 / Cache 토큰(API 캐시 & 컨텍스트 캐시)** 및 실행된 도구 로그를 상단 배지와 접이식 아코디언으로 투명하게 표시.
 
 ---
 
-## 🏛️ 시스템 아키텍처 (Architecture)
+## 📂 디렉터리 구조 (Project Structure)
 
-```mermaid
-graph LR
-    subgraph Frontend ["Frontend (Web Cyber UI)"]
-        UI[사이버 코어 & 대화 뷰포트]
-        STT[음성 인식: WebSpeech / MediaRecorder]
-        TTS[음성 합성: WebSpeech / Cloud TTS]
-        MD[마크다운 & 수식 렌더러]
-        Settings[대화면 환경 설정 대시보드]
-    end
-
-    subgraph Backend ["Backend (FastAPI Engine)"]
-        API["FastAPI App (포트: 8000)"]
-        Agent["자율 에이전트 루프 (Agent Loop)"]
-        STT_Service["/api/stt (Gemini Audio / Whisper)"]
-        Tools["로컬 파일 & OS 도구 세트"]
-        DataStore[("설정 & 세션 데이터 (/data)")]
-    end
-
-    subgraph LLM ["AI Engine"]
-        Gemini["Google Gemini 2.5 Flash / Pro"]
-        Whisper["OpenAI Whisper Engine"]
-    end
-
-    UI --> API
-    STT --> STT_Service
-    API --> Agent
-    STT_Service --> Whisper
-    STT_Service --> Gemini
-    Agent --> LLM
-    Agent --> Tools
-    Agent --> DataStore
-    TTS -.-> UI
+```text
+MINORI/
+├── backend/
+│   ├── app.py                     # FastAPI 메인 서버 및 라우터 (/api/chat, /api/stt, /api/memory 등)
+│   ├── core/
+│   │   ├── agent.py               # 자율 에이전트 루프 (Gemini / OpenAI / 로컬 Ollama & 멀티모달 통합)
+│   │   ├── tools.py               # 내장 도구 모음 (파일 I/O, 실시간 날씨, 웹 검색/열람, Vision, 이미지 생성)
+│   │   └── plugin_loader.py       # plugins/ 폴더 무중단 동적 스캔 및 Function Calling 래퍼
+│   ├── Services/
+│   │   ├── settings_service.py    # 환경 설정 로드/저장 서비스
+│   │   ├── memory_service.py      # 하이퍼 메모리(장기 기억) CRUD 서비스
+│   │   └── reminder_service.py    # 백그라운드 타이머 & 리마인더 스케줄링 서비스
+│   └── data/
+│       └── settings.example.json  # 초기 환경 설정 템플릿 (개인 API 키 제외)
+├── frontend/
+│   ├── index.html                 # 메인 사이버 코어 UI 및 대화면 설정 대시보드
+│   ├── style.css                  # 다크 사이버 테마 스타일시트
+│   ├── app.js                     # 프론트엔드 코어 로직 (드래그앤드롭, 마크다운/수식, STT/TTS, 타이머 등)
+│   └── generated_images/          # 생성된 이미지 정적 서빙 폴더
+├── plugins/
+│   ├── README.md                  # 커스텀 파이썬 플러그인 작성 가이드
+│   └── pc_system_status.py        # [기본 플러그인] 로컬 PC 메모리/디스크/OS 상태 진단 도구
+├── requirements.txt               # Python 필수 패키지 목록
+└── run_server.py                  # 원클릭 서버 실행 런처 (http://127.0.0.1:8000)
 ```
 
 ---
 
 ## 🚀 빠른 시작 가이드 (Quick Start)
 
-### 1. 레포지토리 클론 및 환경 준비
+### 1. 레포지토리 클론 및 패키지 설치
 ```bash
 git clone https://github.com/your-username/MINORI.git
 cd MINORI
 
-# 가상환경 생성 (권장)
+# 가상환경 생성 및 활성화 (권장)
 python -m venv venv
-# Windows:
-venv\Scripts\activate
-# Linux/Mac:
-source venv/bin/activate
+venv\Scripts\activate  # Windows
+# source venv/bin/activate  # macOS / Linux
 
 # 의존 패키지 설치
 pip install -r requirements.txt
@@ -112,36 +110,12 @@ python run_server.py
 ```
 
 ### 3. 브라우저 접속 및 초기 설정
-1. 웹 브라우저에서 `http://127.0.0.1:8000`으로 접속합니다.
-2. 좌측 상단 **[설정]** 탭을 클릭하여 대화면 설정 대시보드를 엽니다.
-3. **[AI 모델 & API 설정]**에서 본인의 [Google AI Studio API Key](https://aistudio.google.com/)를 입력하고 **[연결 테스트]** 및 **[설정 저장]**을 완료합니다.
-4. **[✕ 대화로 돌아가기]**를 누른 후 미노리에게 작업을 지시하거나 마이크 버튼으로 대화를 시작하세요!
-
----
-
-## 💬 음성 명령 예시 (Voice & Chat Commands)
-
-- *"미노리야, 지금 몇 시야?"* (시스템 시각 실시간 확인)
-- *"작업 공간에 어떤 파이썬 파일들이 있는지 검사해줘."* (디렉터리 파일 트리 자동 탐색)
-- *"Test 폴더에 있는 ApiTest.py 코드를 읽고 어떤 기능인지 3줄로 요약해줘."* (로컬 파일 분석)
-- *"오늘 진행한 업무 회의록 템플릿을 meeting_notes.md 파일로 새로 만들어줘."* (신규 파일 자동 생성)
-
----
-
-## 🗺️ 향후 로드맵 (Roadmap)
-
-- [x] 반응형 사이버 코어 애니메이션 및 다크 테마 UI
-- [x] Google Gemini 2.5 Flash/Pro 에이전트 도구 호출 루프
-- [x] 브라우저 Web Speech API 및 고정밀 Gemini/Whisper STT 연동
-- [x] 로어북(Lorebook) & 모듈형 규칙 편집 대시보드
-- [x] 마크다운 서식, 코드 블록 원클릭 복사, 수식($) 표기
-- [ ] **하이퍼 메모리 (Hyper Memory)**: 사용자 성향과 지침을 스스로 추출하여 영구 기억하는 장기 기억 엔진
-- [ ] **사용자 확장 플러그인 시스템**: `plugins/` 폴더에 파이썬 스크립트 추가 시 신규 도구 자동 등록
-- [ ] **실시간 음성 상호작용 (Gemini Live API)**: 호출어(Wake Word) 기반 무클릭 음성 상시 대기
-- [ ] **단일 실행 파일 (Standalone Desktop App)**: PyInstaller / WebView2 기반 무설치 `.exe` 패키징
+1. 브라우저에서 **`http://127.0.0.1:8000`** 으로 접속합니다.
+2. 좌측 상단 **[설정]** 탭 ➔ **[AI 모델 & API 설정]**에서 [Google AI Studio API Key](https://aistudio.google.com/)를 입력하고 **[설정 저장]**을 누르거나, 오프라인 사용 시 **`🦙 Ollama / 로컬 LLM`** 칩을 선택합니다.
+3. 대화창에 캡처 이미지를 끌어다 놓거나 마이크/채팅으로 미노리에게 무엇이든 지시해 보세요!
 
 ---
 
 ## 📜 라이선스 (License)
 
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+This project is licensed under the MIT License.

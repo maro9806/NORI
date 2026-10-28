@@ -7,7 +7,8 @@ SETTINGS_PATH = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "d
 DEFAULT_SETTINGS = {
     "api_key": "",
     "workspace_dir": os.path.abspath(r"D:\AIproject"),
-    "model_name": "gemini-2.5-flash",
+    "model_name": "gemini-3.8-flash",
+    "stt_model": "gemini-3.8-flash",
     "temperature": 0.2,
     "allowed_workspaces": [
         {

@@ -1,0 +1,18 @@
+{
+  "api_key": "",
+  "openai_api_key": "",
+  "custom_endpoint": "",
+  "model_name": "gemini-3.8-flash",
+  "stt_model": "gemini-3.8-flash",
+  "temperature": 0.2,
+  "workspace_dir": "D:\\AIproject",
+  "allowed_workspaces": [
+    {
+      "id": "ws_main",
+      "alias": "기본 작업 공간",
+      "path": "D:\\AIproject",
+      "read_only": false,
+      "enabled": true
+    }
+  ]
+}

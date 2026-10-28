@@ -1,0 +1,435 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 960 540" width="960" height="540">
+  <defs>
+    <!-- Background Gradients -->
+    <radialGradient id="bg-glow-radial" cx="50%" cy="45%" r="65%">
+      <stop offset="0%" stop-color="#120a2e" stop-opacity="0.9"/>
+      <stop offset="35%" stop-color="#0a051d" stop-opacity="0.95"/>
+      <stop offset="70%" stop-color="#030208" stop-opacity="1"/>
+      <stop offset="100%" stop-color="#010003" stop-opacity="1"/>
+    </radialGradient>
+
+    <radialGradient id="argon-core-glow" cx="50%" cy="48%" r="40%">
+      <stop offset="0%" stop-color="#8b5cf6" stop-opacity="0.35"/>
+      <stop offset="40%" stop-color="#00f5ff" stop-opacity="0.18"/>
+      <stop offset="75%" stop-color="#3b0764" stop-opacity="0.08"/>
+      <stop offset="100%" stop-color="#000000" stop-opacity="0"/>
+    </radialGradient>
+
+    <!-- Chrome & Metallic Gradients -->
+    <linearGradient id="chrome-vert" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#ffffff"/>
+      <stop offset="18%" stop-color="#d8f8ff"/>
+      <stop offset="42%" stop-color="#245a78"/>
+      <stop offset="49%" stop-color="#091b29"/>
+      <stop offset="52%" stop-color="#aae7ff"/>
+      <stop offset="68%" stop-color="#13364f"/>
+      <stop offset="88%" stop-color="#2a1052"/>
+      <stop offset="100%" stop-color="#551a8b"/>
+    </linearGradient>
+
+    <linearGradient id="chrome-bright" x1="20%" y1="0%" x2="80%" y2="100%">
+      <stop offset="0%" stop-color="#ffffff"/>
+      <stop offset="25%" stop-color="#cffafe"/>
+      <stop offset="48%" stop-color="#479bb9"/>
+      <stop offset="52%" stop-color="#081e28"/>
+      <stop offset="55%" stop-color="#1e3a5f"/>
+      <stop offset="78%" stop-color="#a5f3fc"/>
+      <stop offset="100%" stop-color="#ffffff"/>
+    </linearGradient>
+
+    <linearGradient id="argon-metal-edge" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#00f3ff"/>
+      <stop offset="30%" stop-color="#c084fc"/>
+      <stop offset="50%" stop-color="#ffffff"/>
+      <stop offset="70%" stop-color="#a855f7"/>
+      <stop offset="100%" stop-color="#00f3ff"/>
+    </linearGradient>
+
+    <!-- Neon Glow Line Gradients -->
+    <linearGradient id="neon-cyan-fade" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#00f5ff" stop-opacity="0"/>
+      <stop offset="15%" stop-color="#00f5ff" stop-opacity="0.8"/>
+      <stop offset="50%" stop-color="#cffafe" stop-opacity="1"/>
+      <stop offset="85%" stop-color="#00f5ff" stop-opacity="0.8"/>
+      <stop offset="100%" stop-color="#00f5ff" stop-opacity="0"/>
+    </linearGradient>
+
+    <linearGradient id="neon-violet-fade" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#c084fc" stop-opacity="0"/>
+      <stop offset="25%" stop-color="#a855f7" stop-opacity="0.8"/>
+      <stop offset="50%" stop-color="#f0abfc" stop-opacity="1"/>
+      <stop offset="75%" stop-color="#a855f7" stop-opacity="0.8"/>
+      <stop offset="100%" stop-color="#c084fc" stop-opacity="0"/>
+    </linearGradient>
+
+    <linearGradient id="argon-plasma" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#00ffff"/>
+      <stop offset="35%" stop-color="#38bdf8"/>
+      <stop offset="70%" stop-color="#c084fc"/>
+      <stop offset="100%" stop-color="#f43f5e"/>
+    </linearGradient>
+
+    <!-- Floor Grid Mask -->
+    <linearGradient id="grid-fade-mask" x1="0%" y1="100%" x2="0%" y2="0%">
+      <stop offset="0%" stop-color="#ffffff" stop-opacity="0.6"/>
+      <stop offset="50%" stop-color="#ffffff" stop-opacity="0.15"/>
+      <stop offset="100%" stop-color="#ffffff" stop-opacity="0"/>
+    </linearGradient>
+
+    <!-- Filters -->
+    <filter id="glow-heavy" x="-40%" y="-40%" width="180%" height="180%">
+      <feGaussianBlur in="SourceGraphic" stdDeviation="12" result="blur1"/>
+      <feGaussianBlur in="SourceGraphic" stdDeviation="5" result="blur2"/>
+      <feGaussianBlur in="SourceGraphic" stdDeviation="2" result="blur3"/>
+      <feMerge>
+        <feMergeNode in="blur1"/>
+        <feMergeNode in="blur2"/>
+        <feMergeNode in="blur3"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+
+    <filter id="neon-bloom" x="-30%" y="-30%" width="160%" height="160%">
+      <feGaussianBlur in="SourceGraphic" stdDeviation="7" result="blur"/>
+      <feMerge>
+        <feMergeNode in="blur"/>
+        <feMergeNode in="blur"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+
+    <filter id="laser-flare" x="-50%" y="-200%" width="200%" height="500%">
+      <feGaussianBlur in="SourceGraphic" stdDeviation="4 1" result="blur"/>
+      <feMerge>
+        <feMergeNode in="blur"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+
+    <!-- Circuit Pattern -->
+    <pattern id="dot-grid" x="0" y="0" width="30" height="30" patternUnits="userSpaceOnUse">
+      <circle cx="2" cy="2" r="0.75" fill="#38bdf8" opacity="0.2"/>
+    </pattern>
+  </defs>
+
+  <!-- Base Ambient Background -->
+  <rect width="960" height="540" fill="#020005"/>
+  <rect width="960" height="540" fill="url(#bg-glow-radial)"/>
+  <rect width="960" height="540" fill="url(#argon-core-glow)"/>
+  <rect width="960" height="540" fill="url(#dot-grid)"/>
+
+  <!-- Perspective Cyber Space Floor Grid -->
+  <g opacity="0.7" mask="url(#grid-mask-ref)">
+    <mask id="grid-mask-ref">
+      <rect x="0" y="270" width="960" height="270" fill="url(#grid-fade-mask)"/>
+    </mask>
+    <!-- Perspective Grid Lines -->
+    <path d="
+      M -140,540 L 480,270 M 0,540 L 480,270 M 120,540 L 480,270 M 240,540 L 480,270 
+      M 340,540 L 480,270 M 420,540 L 480,270 M 480,540 L 480,270 M 540,540 L 480,270 
+      M 620,540 L 480,270 M 720,540 L 480,270 M 840,540 L 480,270 M 960,540 L 480,270 
+      M 1100,540 L 480,270" 
+      stroke="#00e5ff" stroke-width="0.8" opacity="0.4"/>
+    <!-- Transverse Grid Rungs -->
+    <line x1="0" y1="285" x2="960" y2="285" stroke="#a855f7" stroke-width="0.5" opacity="0.3"/>
+    <line x1="0" y1="305" x2="960" y2="305" stroke="#00e5ff" stroke-width="0.6" opacity="0.35"/>
+    <line x1="0" y1="335" x2="960" y2="335" stroke="#a855f7" stroke-width="0.7" opacity="0.4"/>
+    <line x1="0" y1="375" x2="960" y2="375" stroke="#00e5ff" stroke-width="0.8" opacity="0.5"/>
+    <line x1="0" y1="430" x2="960" y2="430" stroke="#38bdf8" stroke-width="1.0" opacity="0.6"/>
+    <line x1="0" y1="500" x2="960" y2="500" stroke="#00f5ff" stroke-width="1.2" opacity="0.7"/>
+  </g>
+
+  <!-- Background Cyber Circuit Traces & Digital Flora -->
+  <g opacity="0.45" stroke-linecap="round" stroke-linejoin="round">
+    <!-- Top Left Stream -->
+    <path d="M 80,60 L 180,60 L 230,110 L 320,110 M 200,60 L 225,35 L 290,35" 
+          stroke="#00f5ff" stroke-width="1" fill="none" filter="url(#neon-bloom)"/>
+    <circle cx="80" cy="60" r="2.5" fill="#00f5ff"/>
+    <circle cx="320" cy="110" r="2.5" fill="#00f5ff"/>
+    <circle cx="290" cy="35" r="2" fill="#c084fc"/>
+
+    <!-- Top Right Stream -->
+    <path d="M 880,60 L 780,60 L 730,110 L 640,110 M 760,60 L 735,35 L 670,35" 
+          stroke="#a855f7" stroke-width="1" fill="none" filter="url(#neon-bloom)"/>
+    <circle cx="880" cy="60" r="2.5" fill="#a855f7"/>
+    <circle cx="640" cy="110" r="2.5" fill="#a855f7"/>
+    <circle cx="670" cy="35" r="2" fill="#00f5ff"/>
+
+    <!-- Geometric Tech Reticles -->
+    <circle cx="480" cy="140" r="110" stroke="#a855f7" stroke-width="0.5" stroke-dasharray="4 8 2 8" fill="none" opacity="0.4"/>
+    <circle cx="480" cy="140" r="140" stroke="#00e5ff" stroke-width="0.5" stroke-dasharray="12 18 1 8" fill="none" opacity="0.25"/>
+    <circle cx="480" cy="140" r="85" stroke="#38bdf8" stroke-width="1" stroke-dasharray="60 40 20 40" fill="none" opacity="0.3"/>
+  </g>
+
+  <!-- Central Crest / Iconic Dual Gemini Nodes & Argon Orbitals -->
+  <g transform="translate(480, 136)">
+    <!-- Outer Orbital Rings (Argon Shell Motif: 2, 8, 8) -->
+    <ellipse cx="0" cy="0" rx="95" ry="32" stroke="#a855f7" stroke-width="1.2" fill="none" 
+             transform="rotate(-25)" stroke-dasharray="90 15 30 15" opacity="0.75" filter="url(#neon-bloom)"/>
+    <ellipse cx="0" cy="0" rx="95" ry="32" stroke="#00f5ff" stroke-width="1.2" fill="none" 
+             transform="rotate(25)" stroke-dasharray="80 20 40 10" opacity="0.75" filter="url(#neon-bloom)"/>
+    <ellipse cx="0" cy="0" rx="108" ry="36" stroke="#38bdf8" stroke-width="0.8" fill="none" 
+             transform="rotate(90)" stroke-dasharray="120 40 20 30" opacity="0.5"/>
+
+    <!-- Glowing Orbiting Valence Electrons / Data Bits -->
+    <circle cx="-75" cy="-28" r="3" fill="#ffffff" filter="url(#neon-bloom)"/>
+    <circle cx="75" cy="28" r="2.5" fill="#00f5ff" filter="url(#neon-bloom)"/>
+    <circle cx="68" cy="-34" r="3" fill="#ffffff" filter="url(#neon-bloom)"/>
+    <circle cx="-68" cy="34" r="2" fill="#e879f9" filter="url(#neon-bloom)"/>
+
+    <!-- Gemini Dual Diamond Nexus -->
+    <!-- Left Twin Energy Shard -->
+    <path d="M -16,-48 L -4,-12 L -12,38 L -32,-8 Z" 
+          fill="url(#argon-plasma)" opacity="0.85" filter="url(#glow-heavy)"/>
+    <path d="M -16,-48 L -4,-12 L -12,38 L -32,-8 Z" 
+          fill="url(#chrome-bright)" stroke="#00ffff" stroke-width="1"/>
+
+    <!-- Right Twin Energy Shard -->
+    <path d="M 16,-48 L 32,-8 L 12,38 L 4,-12 Z" 
+          fill="url(#argon-plasma)" opacity="0.85" filter="url(#glow-heavy)"/>
+    <path d="M 16,-48 L 32,-8 L 12,38 L 4,-12 Z" 
+          fill="url(#chrome-bright)" stroke="#d946ef" stroke-width="1"/>
+
+    <!-- Central Fusion Core -->
+    <polygon points="0,-32 15,0 0,32 -15,0" fill="#ffffff" filter="url(#glow-heavy)"/>
+    <polygon points="0,-22 9,0 0,22 -9,0" fill="#00f5ff"/>
+    <circle cx="0" cy="0" r="3.5" fill="#ffffff"/>
+
+    <!-- Core Center Sparks -->
+    <line x1="-35" y1="0" x2="35" y2="0" stroke="#ffffff" stroke-width="2" filter="url(#laser-flare)"/>
+    <line x1="0" y1="-35" x2="0" y2="35" stroke="#ffffff" stroke-width="2" filter="url(#laser-flare)"/>
+  </g>
+
+  <!-- ================================================================= -->
+  <!-- MAIN TYPOGRAPHY: "GEMINI" (Futuristic Bespoke 3D Chiseled Chrome) -->
+  <!-- ================================================================= -->
+  <g id="gemini-typography">
+    <!-- Underglow & Volumetric Shadow for GEMINI -->
+    <g fill="none" stroke="#7e22ce" stroke-width="14" opacity="0.45" filter="url(#glow-heavy)" stroke-linejoin="bevel">
+      <!-- G -->
+      <path d="M 235,215 L 175,215 L 150,240 L 150,275 L 175,300 L 235,300 L 245,290 L 245,255 L 205,255"/>
+      <!-- E -->
+      <path d="M 330,215 L 265,215 L 265,300 L 330,300 M 265,256 L 315,256"/>
+      <!-- M -->
+      <path d="M 355,300 L 355,215 L 392,268 L 430,215 L 430,300"/>
+      <!-- I -->
+      <path d="M 465,215 L 465,300"/>
+      <!-- N -->
+      <path d="M 505,300 L 505,215 L 565,300 L 565,215"/>
+      <!-- I -->
+      <path d="M 605,215 L 605,300"/>
+    </g>
+
+    <!-- Cyan Neon Rim Aura -->
+    <g fill="none" stroke="#00f5ff" stroke-width="5" opacity="0.75" filter="url(#neon-bloom)" stroke-linejoin="miter">
+      <!-- G -->
+      <path d="M 235,215 L 175,215 L 150,240 L 150,275 L 175,300 L 235,300 L 245,290 L 245,255 L 205,255"/>
+      <!-- E -->
+      <path d="M 330,215 L 265,215 L 265,300 L 330,300 M 265,256 L 315,256"/>
+      <!-- M -->
+      <path d="M 355,300 L 355,215 L 392,268 L 430,215 L 430,300"/>
+      <!-- I -->
+      <path d="M 465,215 L 465,300"/>
+      <!-- N -->
+      <path d="M 505,300 L 505,215 L 565,300 L 565,215"/>
+      <!-- I -->
+      <path d="M 605,215 L 605,300"/>
+    </g>
+
+    <!-- Extruded Lower Bevel / 3D Dark Chasm -->
+    <g fill="none" stroke="#06121f" stroke-width="12" stroke-linejoin="bevel" stroke-linecap="square">
+      <!-- G -->
+      <path d="M 235,217 L 175,217 L 150,242 L 150,277 L 175,302 L 235,302 L 245,292 L 245,257 L 205,257"/>
+      <!-- E -->
+      <path d="M 330,217 L 265,217 L 265,302 L 330,302 M 265,258 L 315,258"/>
+      <!-- M -->
+      <path d="M 355,302 L 355,217 L 392,270 L 430,217 L 430,302"/>
+      <!-- I -->
+      <path d="M 465,217 L 465,302"/>
+      <!-- N -->
+      <path d="M 505,302 L 505,217 L 565,302 L 565,217"/>
+      <!-- I -->
+      <path d="M 605,217 L 605,302"/>
+    </g>
+
+    <!-- Foreground Solid Chrome Letters (Chiseled High-Tech Face) -->
+    <g fill="none" stroke="url(#chrome-vert)" stroke-width="7.5" stroke-linejoin="bevel" stroke-linecap="square">
+      <!-- G -->
+      <path d="M 235,215 L 175,215 L 150,240 L 150,275 L 175,300 L 235,300 L 245,290 L 245,255 L 205,255"/>
+      <!-- E -->
+      <path d="M 330,215 L 265,215 L 265,300 L 330,300 M 265,256 L 315,256"/>
+      <!-- M -->
+      <path d="M 355,300 L 355,215 L 392,268 L 430,215 L 430,300"/>
+      <!-- I -->
+      <path d="M 465,215 L 465,300"/>
+      <!-- N -->
+      <path d="M 505,300 L 505,215 L 565,300 L 565,215"/>
+      <!-- I -->
+      <path d="M 605,215 L 605,300"/>
+    </g>
+
+    <!-- Inner Core Refraction / Laser Edge Polish -->
+    <g fill="none" stroke="#ffffff" stroke-width="1.8" stroke-linejoin="bevel" opacity="0.95">
+      <!-- G -->
+      <path d="M 233,215 L 176,215 L 152,239 L 152,274 L 176,298 L 233,298 L 243,289 L 243,257 L 207,257"/>
+      <!-- E -->
+      <path d="M 328,215 L 267,215 L 267,298 L 328,298 M 267,256 L 313,256"/>
+      <!-- M -->
+      <path d="M 357,298 L 357,217 L 392,267 L 428,217 L 428,298"/>
+      <!-- I -->
+      <path d="M 465,217 L 465,298"/>
+      <!-- N -->
+      <path d="M 507,298 L 507,217 L 563,298 L 563,217"/>
+      <!-- I -->
+      <path d="M 605,217 L 605,298"/>
+    </g>
+
+    <!-- Top Chamfer High-Glint Accent Lights -->
+    <g fill="#ffffff" filter="url(#neon-bloom)">
+      <polygon points="175,214 185,214 178,217 168,217"/>
+      <polygon points="265,214 278,214 272,217 259,217"/>
+      <polygon points="354,214 365,214 360,217 349,217"/>
+      <polygon points="463,214 472,214 468,217 459,217"/>
+      <polygon points="504,214 515,214 510,217 499,217"/>
+      <polygon points="603,214 612,214 608,217 599,217"/>
+      <!-- Mid Letter Sharp Sparkles -->
+      <circle cx="392" cy="268" r="2.2" fill="#ffffff" filter="url(#glow-heavy)"/>
+      <circle cx="245" cy="255" r="2" fill="#00ffff"/>
+      <circle cx="564" cy="216" r="2.2" fill="#ffffff" filter="url(#glow-heavy)"/>
+    </g>
+  </g>
+
+  <!-- ================================================================= -->
+  <!-- HORIZONTAL OPTICAL FLARE & LASER ACCENT LINE                      -->
+  <!-- ================================================================= -->
+  <g>
+    <ellipse cx="480" cy="258" rx="420" ry="1.5" fill="url(#neon-cyan-fade)" opacity="0.8" filter="url(#laser-flare)"/>
+    <ellipse cx="480" cy="258" rx="220" ry="1" fill="#ffffff" opacity="0.9" filter="url(#laser-flare)"/>
+    <!-- Central Beam Flare Burst -->
+    <ellipse cx="392" cy="268" rx="45" ry="3" fill="#ffffff" filter="url(#laser-flare)"/>
+    <ellipse cx="392" cy="268" rx="3" ry="45" fill="#00f5ff" filter="url(#laser-flare)"/>
+  </g>
+
+  <!-- ================================================================= -->
+  <!-- SECONDARY TYPOGRAPHY: "ARGON" & HIGH-TECH HUD FRAMING             -->
+  <!-- ================================================================= -->
+  <g id="argon-typography" transform="translate(0, 30)">
+    <!-- Subtitle Tech Framing Wings -->
+    <g stroke="url(#neon-cyan-fade)" stroke-width="1.5" fill="none" opacity="0.8">
+      <path d="M 170,335 L 270,335 L 285,348 L 305,348"/>
+      <path d="M 790,335 L 690,335 L 675,348 L 655,348"/>
+      <!-- Micro Reticle Details on Wings -->
+      <line x1="210" y1="330" x2="210" y2="335" stroke="#00f5ff" stroke-width="1.5"/>
+      <line x1="230" y1="330" x2="230" y2="335" stroke="#c084fc" stroke-width="1.5"/>
+      <line x1="750" y1="330" x2="750" y2="335" stroke="#00f5ff" stroke-width="1.5"/>
+      <line x1="730" y1="330" x2="730" y2="335" stroke="#c084fc" stroke-width="1.5"/>
+    </g>
+
+    <!-- Technical Readouts flanking the ARGON text -->
+    <text x="210" y="325" fill="#38bdf8" font-family="'Courier New', monospace" font-size="7" letter-spacing="2" opacity="0.7">AR-18 // GAS PHASE</text>
+    <text x="668" y="325" fill="#c084fc" font-family="'Courier New', monospace" font-size="7" letter-spacing="2" opacity="0.7">CORE TEMP: 87.3 K</text>
+
+    <!-- "ARGON" Laser Glowing Typography -->
+    <!-- Ambient Neon Violet/Cyan Back-Burst -->
+    <g fill="none" stroke="#c084fc" stroke-width="6" stroke-linejoin="round" opacity="0.5" filter="url(#glow-heavy)">
+      <!-- A -->
+      <path d="M 345,360 L 362,320 L 380,360 M 351,348 L 374,348"/>
+      <!-- R -->
+      <path d="M 405,360 L 405,320 L 428,320 C 438,320 442,327 442,335 C 442,343 436,348 426,348 L 405,348 M 424,348 L 443,360"/>
+      <!-- G -->
+      <path d="M 495,330 C 490,323 480,320 470,320 C 454,320 445,332 445,340 C 445,350 455,360 472,360 C 488,360 496,352 496,343 L 473,343"/>
+      <!-- O -->
+      <path d="M 522,320 C 508,320 500,330 500,340 C 500,350 508,360 522,360 C 538,360 546,350 546,340 C 546,330 538,320 522,320 Z"/>
+      <!-- N -->
+      <path d="M 570,360 L 570,320 L 610,360 L 610,320"/>
+    </g>
+
+    <!-- Foreground Crisp Pure Neon Core -->
+    <g fill="none" stroke="#ffffff" stroke-width="2.2" stroke-linejoin="round" stroke-linecap="round" filter="url(#neon-bloom)">
+      <!-- A -->
+      <path d="M 345,360 L 362,320 L 380,360 M 351,348 L 374,348"/>
+      <!-- R -->
+      <path d="M 405,360 L 405,320 L 428,320 C 438,320 442,327 442,335 C 442,343 436,348 426,348 L 405,348 M 424,348 L 443,360"/>
+      <!-- G -->
+      <path d="M 495,330 C 490,323 480,320 470,320 C 454,320 445,332 445,340 C 445,350 455,360 472,360 C 488,360 496,352 496,343 L 473,343"/>
+      <!-- O -->
+      <path d="M 522,320 C 508,320 500,330 500,340 C 500,350 508,360 522,360 C 538,360 546,350 546,340 C 546,330 538,320 522,320 Z"/>
+      <!-- N -->
+      <path d="M 570,360 L 570,320 L 610,360 L 610,320"/>
+    </g>
+
+    <!-- Sharp Intense Cyan Terminal Points -->
+    <g fill="#00f5ff" filter="url(#neon-bloom)">
+      <circle cx="362" cy="320" r="1.8"/>
+      <circle cx="405" cy="320" r="1.8"/>
+      <circle cx="473" cy="343" r="1.8"/>
+      <circle cx="570" cy="320" r="1.8"/>
+      <circle cx="610" cy="320" r="1.8"/>
+    </g>
+
+    <!-- Violet Plasma Streak Under ARGON -->
+    <ellipse cx="480" cy="378" rx="140" ry="1.2" fill="url(#neon-violet-fade)" filter="url(#laser-flare)"/>
+    <ellipse cx="480" cy="378" rx="50" ry="1" fill="#ffffff" opacity="0.8" filter="url(#laser-flare)"/>
+
+    <!-- Bottom Tech Sub-bar Specs -->
+    <g opacity="0.6" transform="translate(0, 52)">
+      <!-- Central sci-fi chevron badge -->
+      <path d="M 455,345 L 470,355 L 480,348 L 490,355 L 505,345" stroke="#38bdf8" stroke-width="1" fill="none"/>
+      <text x="480" y="340" fill="#a5f3fc" font-family="'Segoe UI', Roboto, sans-serif" font-size="6" font-weight="700" letter-spacing="4" text-anchor="middle">SPEC. 0.934% // PURIFIED ATOMIC FLOW</text>
+      <circle cx="415" cy="338" r="1.5" fill="#a855f7"/>
+      <line x1="330" y1="338" x2="405" y2="338" stroke="#a855f7" stroke-width="0.5" stroke-dasharray="4 2"/>
+      <circle cx="545" cy="338" r="1.5" fill="#00f5ff"/>
+      <line x1="555" y1="338" x2="630" y2="338" stroke="#00f5ff" stroke-width="0.5" stroke-dasharray="4 2"/>
+    </g>
+  </g>
+
+  <!-- ================================================================= -->
+  <!-- FOREGROUND AMBIENCE: FLOATING PARTICLES & ATMOSPHERIC GLINTS     -->
+  <!-- ================================================================= -->
+  <g opacity="0.75">
+    <!-- Star-like Nano Dust -->
+    <circle cx="180" cy="160" r="1" fill="#ffffff" opacity="0.6"/>
+    <circle cx="290" cy="180" r="1.2" fill="#00f5ff" opacity="0.8" filter="url(#neon-bloom)"/>
+    <circle cx="420" cy="90" r="1" fill="#e879f9" opacity="0.7"/>
+    <circle cx="580" cy="140" r="1.5" fill="#ffffff" opacity="0.9" filter="url(#neon-bloom)"/>
+    <circle cx="680" cy="190" r="0.8" fill="#38bdf8" opacity="0.5"/>
+    <circle cx="750" cy="120" r="1.2" fill="#a855f7" opacity="0.7"/>
+    <circle cx="220" cy="420" r="1.2" fill="#00f5ff" opacity="0.8"/>
+    <circle cx="720" cy="440" r="1" fill="#e879f9" opacity="0.6"/>
+    <circle cx="340" cy="460" r="0.8" fill="#ffffff" opacity="0.5"/>
+    <circle cx="620" cy="470" r="1.4" fill="#00f5ff" opacity="0.7"/>
+
+    <!-- Subtle Optical Hexagons -->
+    <polygon points="140,110 148,105 156,110 156,120 148,125 140,120" stroke="#00f5ff" stroke-width="0.5" fill="none" opacity="0.25"/>
+    <polygon points="820,240 826,236 832,240 832,248 826,252 820,248" stroke="#a855f7" stroke-width="0.5" fill="none" opacity="0.25"/>
+    <polygon points="210,380 215,377 220,380 220,386 215,389 210,386" stroke="#38bdf8" stroke-width="0.5" fill="none" opacity="0.2"/>
+  </g>
+
+  <!-- Cinema Framing / Vignette Overlay (Corner Cutters) -->
+  <g fill="#020006">
+    <!-- Top-Left Corner Cut -->
+    <polygon points="0,0 60,0 0,60"/>
+    <line x1="0" y1="60" x2="60" y2="0" stroke="#00f5ff" stroke-width="1" opacity="0.4"/>
+    <line x1="5" y1="70" x2="70" y2="5" stroke="#a855f7" stroke-width="0.5" opacity="0.3"/>
+
+    <!-- Top-Right Corner Cut -->
+    <polygon points="960,0 900,0 960,60"/>
+    <line x1="960" y1="60" x2="900" y2="0" stroke="#a855f7" stroke-width="1" opacity="0.4"/>
+    <line x1="955" y1="70" x2="890" y2="5" stroke="#00f5ff" stroke-width="0.5" opacity="0.3"/>
+
+    <!-- Bottom-Left Corner Cut -->
+    <polygon points="0,540 60,540 0,480"/>
+    <line x1="0" y1="480" x2="60" y2="540" stroke="#a855f7" stroke-width="1" opacity="0.4"/>
+
+    <!-- Bottom-Right Corner Cut -->
+    <polygon points="960,540 900,540 960,480"/>
+    <line x1="960" y1="480" x2="900" y2="540" stroke="#00f5ff" stroke-width="1" opacity="0.4"/>
+  </g>
+
+  <!-- Outer Vignette Shading -->
+  <rect width="960" height="540" 
+        fill="none" 
+        stroke="#010003" 
+        stroke-width="10" 
+        opacity="0.8"/>
+</svg>

@@ -1692,4 +1692,317 @@ button > svg,
   background: rgba(239, 68, 68, 0.2);
   border-color: #ef4444;
 }
-
+
+
+/* ==========================================================================
+   이미지/문서 드래그 앤 드롭, 첨부 프리뷰 바, 인라인 이미지 뷰어, 타이머 배지
+   ========================================================================== */
+.drop-zone-overlay {
+  position: absolute;
+  inset: 8px;
+  background: rgba(15, 23, 42, 0.88);
+  border: 2px dashed #60a5fa;
+  border-radius: 10px;
+  z-index: 500;
+  display: none;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  color: #93c5fd;
+  pointer-events: none;
+  backdrop-filter: blur(4px);
+}
+.drop-zone-overlay.active {
+  display: flex;
+}
+.drop-zone-overlay svg {
+  width: 44px;
+  height: 44px;
+  fill: #60a5fa;
+}
+.drop-zone-title {
+  font-size: 15px;
+  font-weight: 700;
+  color: #e2e8f0;
+}
+.drop-zone-sub {
+  font-size: 12px;
+  color: var(--text-muted);
+}
+
+.chat-attachment-preview-bar {
+  display: none;
+  flex-wrap: wrap;
+  gap: 8px;
+  padding: 8px 12px;
+  background: rgba(20, 24, 38, 0.95);
+  border: 1px solid var(--border-color);
+  border-bottom: none;
+  border-radius: 8px 8px 0 0;
+  margin-top: 4px;
+}
+.chat-attachment-preview-bar.has-items {
+  display: flex;
+}
+.attachment-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: #1e2439;
+  border: 1px solid #3b4261;
+  border-radius: 6px;
+  padding: 4px 8px;
+  font-size: 11px;
+  color: var(--text-main);
+  max-width: 240px;
+}
+.attachment-thumb {
+  width: 32px;
+  height: 32px;
+  object-fit: cover;
+  border-radius: 4px;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+}
+.attachment-name {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  flex: 1;
+}
+.attachment-remove-btn {
+  background: transparent;
+  border: none;
+  color: #f87171;
+  cursor: pointer;
+  font-size: 13px;
+  font-weight: 700;
+  padding: 0 3px;
+  line-height: 1;
+}
+.attachment-remove-btn:hover {
+  color: #ef4444;
+}
+
+.btn-attach-file {
+  width: 36px;
+  height: 36px;
+  border-radius: 6px;
+  border: 1px solid var(--border-color);
+  background: var(--bg-input);
+  color: var(--text-muted);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  flex-shrink: 0;
+  transition: all 0.2s ease;
+}
+.btn-attach-file:hover {
+  color: var(--text-accent);
+  border-color: var(--text-accent);
+  background: rgba(122, 162, 247, 0.12);
+}
+
+/* 채팅 내 마크다운 이미지 및 첨부 썸네일 */
+.chat-inline-image-card {
+  margin: 10px 0;
+  display: inline-flex;
+  flex-direction: column;
+  background: #131622;
+  border: 1px solid #2e3452;
+  border-radius: 8px;
+  overflow: hidden;
+  max-width: min(100%, 460px);
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.45);
+}
+.chat-inline-image {
+  display: block;
+  max-width: 100%;
+  max-height: 380px;
+  width: auto;
+  height: auto;
+  object-fit: contain;
+  cursor: zoom-in;
+  background: #0d0f17;
+  transition: transform 0.2s ease;
+}
+.chat-inline-image:hover {
+  transform: scale(1.01);
+}
+.chat-inline-image-Meta {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 6px 10px;
+  font-size: 11px;
+  color: var(--text-muted);
+  background: #181c2c;
+  border-top: 1px solid #252b42;
+  gap: 8px;
+}
+.chat-inline-image-caption {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  flex: 1;
+}
+.chat-inline-image-dl {
+  color: var(--text-accent);
+  text-decoration: none;
+  font-weight: 600;
+  white-space: nowrap;
+}
+.chat-inline-image-dl:hover {
+  text-decoration: underline;
+}
+
+.message-body a.md-link {
+  color: #7dcfff;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+.message-body a.md-link:hover {
+  color: #a7f3d0;
+}
+
+/* 이미지 확대 라이트박스 */
+.image-lightbox-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(8, 10, 18, 0.92);
+  z-index: 99995;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  cursor: zoom-out;
+}
+.image-lightbox-backdrop img {
+  max-width: 92vw;
+  max-height: 84vh;
+  border-radius: 8px;
+  border: 1px solid #3b4261;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.85);
+  background: #0f111a;
+}
+.image-lightbox-caption {
+  margin-top: 10px;
+  color: #cbd5e1;
+  font-size: 12px;
+}
+
+/* 상단 활성 타이머 / 리마인더 카운트다운 배지 */
+.active-timers-bar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-left: auto;
+  align-items: center;
+}
+.timer-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: rgba(16, 185, 129, 0.14);
+  border: 1px solid #10b981;
+  color: #a7f3d0;
+  padding: 4px 10px;
+  border-radius: 14px;
+  font-size: 11px;
+  font-weight: 600;
+  box-shadow: 0 0 10px rgba(16, 185, 129, 0.2);
+}
+.timer-pill-countdown {
+  font-family: 'Consolas', monospace;
+  color: #34d399;
+  font-weight: 700;
+}
+.timer-pill-cancel {
+  background: transparent;
+  border: none;
+  color: #f87171;
+  cursor: pointer;
+  font-size: 11px;
+  padding: 0 2px;
+}
+.timer-pill-cancel:hover {
+  color: #ef4444;
+}
+
+/* ==========================================================================
+   설정 대시보드 및 서브패널 무제한 스크롤 (스크롤바 숨김 처리) & White Thought 토큰 배지
+   ========================================================================== */
+.main-content {
+  min-height: 0;
+  overflow: hidden;
+}
+
+.main-settings-section {
+  min-height: 0;
+  overflow: hidden;
+}
+
+.settings-content-viewport {
+  flex: 1 1 auto !important;
+  min-height: 0 !important;
+  overflow-y: auto !important;
+  overflow-x: hidden !important;
+  padding-right: 0 !important;
+  padding-bottom: 40px !important;
+  scrollbar-width: none !important;
+  -ms-overflow-style: none !important;
+}
+
+.settings-content-viewport::-webkit-scrollbar,
+.settings-content-viewport *::-webkit-scrollbar,
+.sidebar-view::-webkit-scrollbar,
+.sidebar-view *::-webkit-scrollbar {
+  display: none !important;
+  width: 0 !important;
+  height: 0 !important;
+}
+
+.settings-content-viewport *,
+.sidebar-view,
+.sidebar-view * {
+  scrollbar-width: none !important;
+  -ms-overflow-style: none !important;
+}
+
+/* 서브 패널이 내부 컨텐츠를 자르지 않고 자연스럽게 전체 스크롤되도록 보장 */
+.settings-content-viewport .sub-panel {
+  flex: 0 0 auto !important;
+  height: auto !important;
+  min-height: min-content !important;
+  overflow: visible !important;
+  padding-bottom: 24px;
+}
+
+.settings-content-viewport .tts-container,
+.settings-content-viewport .lorebook-card-list,
+.settings-content-viewport .lorebook-config-view,
+.settings-content-viewport .script-view,
+.settings-content-viewport .script-card-list,
+.settings-content-viewport #modulesEditorList,
+.settings-content-viewport .memory-list-container {
+  overflow: visible !important;
+  max-height: none !important;
+  flex: 0 0 auto !important;
+}
+
+/* White Thought 상단 토큰(Input / Output / Cache) 요약 배지 */
+.thought-token-badge {
+  display: inline-flex;
+  align-items: center;
+  font-family: 'Consolas', 'Courier New', monospace;
+  font-size: 10px;
+  font-weight: 600;
+  color: #a7f3d0;
+  background: rgba(16, 185, 129, 0.14);
+  border: 1px solid rgba(16, 185, 129, 0.35);
+  padding: 1px 7px;
+  border-radius: 10px;
+  letter-spacing: 0.2px;
+}

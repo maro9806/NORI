@@ -94,6 +94,21 @@ def toggle_memory_active(mem_id: str, active: bool) -> bool:
     return False
 
 
+def update_memory(mem_id: str, category: Optional[str] = None, content: Optional[str] = None) -> Optional[Dict[str, Any]]:
+    """기존 장기 기억 항목의 카테고리 또는 내용을 수정합니다."""
+    data = load_hyper_memory()
+    for m in data.get("memories", []):
+        if m.get("id") == mem_id:
+            if category is not None and category.strip():
+                m["category"] = category.strip()
+            if content is not None and content.strip():
+                m["content"] = content.strip()
+            m["updated_at"] = time.strftime("%Y-%m-%d %H:%M:%S")
+            save_hyper_memory(data)
+            return m
+    return None
+
+
 def get_active_memory_prompt() -> str:
     """활성화된 모든 장기 기억을 시스템 프롬프트 주입용 텍스트로 컴파일."""
     data = load_hyper_memory()

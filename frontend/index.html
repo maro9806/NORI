@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>MINORI - Personal Digital Secretary</title>
-  <link rel="stylesheet" href="style.css?v=3.2">
+  <link rel="stylesheet" href="style.css?v=4.1">
 </head>
 <body class="theme-dark">
   <div class="app-layout">
@@ -46,7 +46,6 @@
     </div>
   </div>
 
-  <!-- 폴더(노트) 및 채팅 세션 계층 트리 -->
   <!-- 폴더(노트) 및 채팅 세션 계층 트리 -->
   <div class="session-tree-container" id="sessionTree">
     <!-- 기본 시작 채팅 세션 -->
@@ -133,6 +132,14 @@
             <span class="emotion-badge" id="emotionBadge">상태: 기본</span>
           </div>
         </div>
+        <div class="active-timers-bar" id="activeTimersBar"></div>
+      </div>
+
+      <!-- 드래그 앤 드롭 오버레이 -->
+      <div class="drop-zone-overlay" id="dropZoneOverlay">
+        <svg viewBox="0 0 24 24"><path d="M19.35 10.04C18.67 6.59 15.64 4 12 4 9.11 4 6.6 5.64 5.35 8.04 2.34 8.36 0 10.91 0 14c0 3.31 2.69 6 6 6h13c2.76 0 5-2.24 5-5 0-2.64-2.05-4.78-4.65-4.96zM14 13v4h-4v-4H7l5-5 5 5h-3z"/></svg>
+        <div class="drop-zone-title">이미지 또는 문서를 여기에 놓아 미노리에게 전달하세요</div>
+        <div class="drop-zone-sub">캡처 스크린샷, 사진(Vision 분석), 코드/텍스트 문서(.txt, .md, .py, .json, .pdf) 지원</div>
       </div>
 
       <!-- 대화 스크롤 영역 -->
@@ -164,7 +171,7 @@
 [시스템 초기화 완료]
 - 에이전트: MINORI (자율형 개인 디지털 비서)
 - 작업 공간: D:\AIproject 연결 확인됨.
-- 기능: 파일 시스템 I/O 도구, 음성 인식(STT), 음성 합성(TTS), 설정형 모듈 제어
+- 기능: 파일 시스템 I/O, Vision 이미지 분석/생성, 실시간 기상/웹검색, 선제 타이머, plugins/ 확장, 로컬 Ollama 지원
             </div>
           </div>
 
@@ -180,34 +187,32 @@
             
             <div class="guide-grid">
               <div class="guide-card">
-                <div class="guide-badge">1. API 설정</div>
+                <div class="guide-badge">1. API 및 오프라인 LLM</div>
                 <div class="guide-text">
-                  좌측 상단 <b>[설정] 탭 ➔ 고급 설정</b>에서 Google Gemini API 키를 입력하고 <b>[연결 테스트]</b>를 진행해 주세요.
+                  좌측 상단 <b>[설정] 탭 ➔ AI 모델 설정</b>에서 Gemini API 키를 입력하거나, 인터넷 없는 완전 오프라인 <b>Ollama</b> 모드를 선택할 수 있습니다.
                 </div>
               </div>
 
               <div class="guide-card">
-                <div class="guide-badge">2. 음성 대화 (STT/TTS)</div>
+                <div class="guide-badge">2. 이미지/문서 드래그 & 제작</div>
                 <div class="guide-text">
-                  하단 입력창 우측의 <b>마이크 버튼</b>을 누르고 말씀하시면 실시간 음성 인식 후 자동 전송됩니다. <b>[TTS 설정]</b>에서 자동 음성 재생을 켤 수 있습니다.
+                  캡처 스크린샷이나 문서를 채팅창에 끌어다 놓거나(<b>Ctrl+V</b> 지원) 분석을 맡기세요. <code>"사이버펑크 도시 그려줘"</code>라고 하면 이미지를 즉시 생성해 띄웁니다.
                 </div>
               </div>
 
               <div class="guide-card">
-                <div class="guide-badge">3. 자율 도구 실행</div>
+                <div class="guide-badge">3. 실시간 검색 · 날씨 · 타이머</div>
                 <div class="guide-text">
-                  로컬 작업 공간에서 다음과 같은 명령을 자연어로 내려보세요:<br>
-                  • <code>"지금 몇 시야?"</code> (시스템 시각 조회)<br>
-                  • <code>"작업 공간에 어떤 파일들이 있어?"</code> (디렉터리 파일 탐색)<br>
-                  • <code>"Test 폴더의 ApiTest.py 내용 요약해줘"</code> (파일 읽기 및 분석)<br>
-                  • <code>"오늘 회의록 양식을 meeting_template.md 파일로 작성해줘"</code> (파일 생성)
+                  • <code>"오늘 서울 날씨 어때?"</code> / <code>"최신 AI 뉴스 검색해줘"</code><br>
+                  • 뉴스/블로그 URL 링크 본문 요약<br>
+                  • <code>"10분 뒤에 알려줘"</code> (카운트다운 후 음성/토스트 선제 알림)
                 </div>
               </div>
 
               <div class="guide-card">
-                <div class="guide-badge">4. 모듈 및 대화 관리</div>
+                <div class="guide-badge">4. plugins/ 자동 확장</div>
                 <div class="guide-text">
-                  좌측 사이드바 <b>[모듈 설정]</b> 또는 <b>[설정 ➔ 모듈 관리]</b>에서 원하는 규칙을 직접 추가/편집할 수 있습니다. 각 대화 말풍선 상단 우측의 <b>[편집] [리롤] [삭제]</b> 버튼을 상시 이용할 수 있습니다.
+                  <code>D:\AIproject\plugins\</code> 폴더에 파이썬 파일(<code>.py</code>)만 넣으면 서버 재시작 없이 즉시 미노리의 새로운 기술로 자동 등록됩니다.
                 </div>
               </div>
             </div>
@@ -219,9 +224,16 @@
         </div>
       </section>
 
+      <!-- 첨부된 이미지/문서 프리뷰 바 -->
+      <div class="chat-attachment-preview-bar" id="chatAttachmentPreviewBar"></div>
+
       <!-- 하단 입력 바 -->
       <footer class="chat-input-bar">
-        <textarea id="chatInput" placeholder="지시할 내용을 입력하거나 마이크 버튼으로 말씀하세요... (Shift+Enter로 줄바꿈)" rows="1"></textarea>
+        <input type="file" id="chatFileInput" multiple accept="image/*,.txt,.md,.py,.js,.json,.csv,.html,.css,.log,.pdf" style="display: none;">
+        <button type="button" class="btn-attach-file" id="btnAttachFile" title="이미지/스크린샷 또는 문서 첨부 (드래그 앤 드롭 및 Ctrl+V 지원)">
+          <svg class="icon-svg" viewBox="0 0 24 24"><path d="M16.5 6v11.5c0 2.21-1.79 4-4 4s-4-1.79-4-4V5c0-1.38 1.12-2.5 2.5-2.5s2.5 1.12 2.5 2.5v10.5c0 .55-.45 1-1 1s-1-.45-1-1V6H10v9.5c0 1.38 1.12 2.5 2.5 2.5s2.5-1.12 2.5-2.5V5c0-2.21-1.79-4-4-4S7 2.79 7 5v12.5c0 3.04 2.46 5.5 5.5 5.5s5.5-2.46 5.5-5.5V6h-1.5z"/></svg>
+        </button>
+        <textarea id="chatInput" placeholder="지시할 내용을 입력하거나 이미지/문서를 끌어다 놓으세요... (Ctrl+V 캡처 붙여넣기 지원)" rows="1"></textarea>
         <button type="button" class="btn-voice-input" id="btnVoiceInput" title="음성 인식(STT) 시작/중지">
           <svg class="icon-svg" viewBox="0 0 24 24"><path d="M12 14c1.66 0 3-1.34 3-3V5c0-1.66-1.34-3-3-3S9 3.34 9 5v6c0 1.66 1.34 3 3 3zm5.3-3c0 3-2.54 5.1-5.3 5.1S6.7 14 6.7 11H5c0 3.41 2.72 6.23 6 6.72V21h2v-3.28c3.28-.48 6-3.3 6-6.72h-1.7z"/></svg>
         </button>
@@ -282,9 +294,6 @@
 
         <!-- 설정 서브패널 컨테이너 (넓은 뷰포트) -->
         <div class="settings-content-viewport" id="settingsContentViewport">
-
-        
-        
 
         <!-- [SUB-PANEL: 모듈 설정 패널] (로어북과 동일한 카드 에디터 구조) -->
         <div class="sub-panel" id="modulesPanel" style="display: none;">
@@ -507,9 +516,20 @@
                 <label class="field-label-sm">STT 엔진 선택</label>
                 <select id="sttProviderSelect" class="dark-input">
                   <option value="webspeech" selected>Web Speech API (로컬 브라우저 내장 / 실시간 오인식 자동 교정 탑재 / 무료)</option>
-                  <option value="gemini">Google Gemini 2.5 Flash Audio STT (고정밀 / 미노리 인지 / 음향 왜곡 방지)</option>
+                  <option value="gemini">Google Gemini 3.8 Flash Audio STT (최신 고속 플래그십 / 미노리 인지 / 음향 왜곡 방지)</option>
                   <option value="whisper">OpenAI Whisper-1 (고정밀 단어 힌트 프롬프트 지원)</option>
                 </select>
+              </div>
+
+              <div class="field-group" id="sttGeminiModelGroup" style="display: none;">
+                <label class="field-label-sm">Gemini STT 모델</label>
+                <select id="sttGeminiModelSelect" class="dark-input">
+                  <option value="gemini-3.8-flash" selected>gemini-3.8-flash (기본 권장 / 최신 플래그십 초고속 음성 전사)</option>
+                  <option value="gemini-3.6-flash">gemini-3.6-flash (고성능 오디오 분석)</option>
+                  <option value="gemini-4-argon">gemini-4-argon (차세대 아르곤 모델)</option>
+                  <option value="custom">직접 입력...</option>
+                </select>
+                <input type="text" id="sttGeminiCustomModelInput" class="dark-input" placeholder="모델명 직접 입력 (예: gemini-3.8-flash)" style="display: none; margin-top: 6px;">
               </div>
 
               <div class="field-group">
@@ -705,7 +725,7 @@
                 </button>
               </div>
               <span class="field-hint" style="font-size: 10px; color: var(--text-muted); margin-top: 2px;">
-                * 입력한 키는 로컬 backend/data/settings.json에 안전하게 저장됩니다.
+                * 입력한 키는 로컬 backend/data/settings.json에 안전하게 저장됩니다. (로컬 Ollama 사용 시 API 키 불필요)
               </span>
             </div>
 
@@ -724,7 +744,7 @@
                 <label for="modelNameInput">AI 모델명 (자유 직접 입력)</label>
                 <span class="help-icon" title="API 모델 목록은 수시로 바뀌므로 원하는 최신 모델(Gemini 4 Argon, 3.8/3.6 Flash, OpenAI gpt-4o, Claude, Ollama 등)을 자유롭게 직접 입력하세요.">?</span>
               </div>
-              <input type="text" id="modelNameInput" class="dark-input" placeholder="예: gemini-4-argon, gemini-3.8-flash, gemini-3.6-flash, gpt-4o" style="font-family: monospace; font-size: 12px;" value="gemini-3.8-flash">
+              <input type="text" id="modelNameInput" class="dark-input" placeholder="예: gemini-4-argon, gemini-3.8-flash, gemini-3.6-flash, gpt-4o, llama3.2" style="font-family: monospace; font-size: 12px;" value="gemini-3.8-flash">
             </div>
 
             <!-- Working Preset Chips (현재 검증된 모델 안내 및 클릭 시 자동 완성) -->
@@ -737,15 +757,19 @@
                 <button type="button" class="preset-chip" data-model="gpt-4o">🟢 gpt-4o (OpenAI)</button>
                 <button type="button" class="preset-chip" data-model="gpt-4o-mini">🟢 gpt-4o-mini (경량 OpenAI)</button>
                 <button type="button" class="preset-chip" data-model="claude-3-5-sonnet">🟣 claude-3-5-sonnet (Claude)</button>
-                <button type="button" class="preset-chip" data-model="ollama">🦙 Ollama / 로컬 LLM</button>
+                <button type="button" class="preset-chip" data-model="ollama">🦙 Ollama / 로컬 LLM (오프라인 무료)</button>
               </div>
+            </div>
+
+            <!-- Ollama 로컬 모델 감지 박스 -->
+            <div id="ollamaModelsBox" style="display: none; padding: 10px; background: rgba(16, 185, 129, 0.08); border: 1px solid rgba(16, 185, 129, 0.35); border-radius: 6px; font-size: 11px;">
             </div>
 
             <!-- Optional Custom Endpoint / OpenAI Key for multi-provider -->
             <div class="field-group" style="padding-top: 4px; border-top: 1px dashed var(--border-color); margin-top: 4px;">
               <div class="label-with-help">
                 <label for="openaiApiKeyInput">OpenAI API Key (선택 사항: gpt-4o 등 사용 시)</label>
-                <span class="help-icon" title="OpenAI 모델 사용 시 필요합니다. Google Gemini만 사용하는 경우 비워두세요.">?</span>
+                <span class="help-icon" title="OpenAI 모델 사용 시 필요합니다. Google Gemini나 로컬 Ollama만 사용하는 경우 비워두세요.">?</span>
               </div>
               <input type="password" id="openaiApiKeyInput" class="dark-input" placeholder="sk-..." autocomplete="off">
             </div>
@@ -768,6 +792,17 @@
               <span class="field-hint" style="font-size: 10px; color: var(--text-muted);">
                 * 에이전트의 도구 실행 및 정확한 파일 제어에는 0.0 ~ 0.3의 낮은 온도가 권장됩니다.
               </span>
+            </div>
+
+            <!-- plugins/ 폴더 자동 로드 커스텀 도구 현황 박스 -->
+            <div class="field-group" style="padding-top: 8px; border-top: 1px dashed var(--border-color);">
+              <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
+                <label class="field-label-sm" style="color: var(--text-accent);">🔌 plugins/ 폴더 커스텀 도구 자동 인식 현황</label>
+                <button type="button" class="btn-solid-secondary" id="btnRefreshPlugins" style="padding: 3px 8px; font-size: 10px;">플러그인 스캔</button>
+              </div>
+              <div id="pluginsStatusBox" style="font-size: 11px; color: var(--text-muted); background: rgba(15, 23, 42, 0.5); padding: 8px 10px; border-radius: 4px; border: 1px solid var(--border-color);">
+                플러그인 정보를 불러오는 중...
+              </div>
             </div>
 
             <!-- Connection Test Result Badge/Box -->
@@ -841,7 +876,6 @@
           </div>
         </div>
 
-      
         </div>
 
       </div>
@@ -849,6 +883,6 @@
     </main>
 
   </div>
-  <script src="app.js?v=3.2"></script>
+  <script src="app.js?v=4.1"></script>
 </body>
 </html>
