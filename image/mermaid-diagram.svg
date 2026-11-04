@@ -1,0 +1,142 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 2130.64 1098.1" width="2130.64" height="1098.1" style="--bg:#18181B;--fg:#F4F4F5;--line:#71717A;--muted:#A1A1AA;--surface:#27272A;--border:#3F3F46;background:var(--bg)">
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap');
+  text { font-family: 'Inter', system-ui, sans-serif; }
+  svg {
+    /* Derived from --bg and --fg (overridable via --line, --accent, etc.) */
+    --_text:          var(--fg);
+    --_text-sec:      var(--muted, color-mix(in srgb, var(--fg) 60%, var(--bg)));
+    --_text-muted:    var(--muted, color-mix(in srgb, var(--fg) 40%, var(--bg)));
+    --_text-faint:    color-mix(in srgb, var(--fg) 25%, var(--bg));
+    --_line:          var(--line, color-mix(in srgb, var(--fg) 50%, var(--bg)));
+    --_arrow:         var(--accent, color-mix(in srgb, var(--fg) 85%, var(--bg)));
+    --_node-fill:     var(--surface, color-mix(in srgb, var(--fg) 3%, var(--bg)));
+    --_node-stroke:   var(--border, color-mix(in srgb, var(--fg) 20%, var(--bg)));
+    --_group-fill:    var(--bg);
+    --_group-hdr:     color-mix(in srgb, var(--fg) 5%, var(--bg));
+    --_inner-stroke:  color-mix(in srgb, var(--fg) 12%, var(--bg));
+    --_key-badge:     color-mix(in srgb, var(--fg) 10%, var(--bg));
+  }
+</style>
+<defs>
+  <marker id="arrowhead" markerWidth="8" markerHeight="5" refX="7" refY="2.5" orient="auto">
+    <polygon points="0 0, 8 2.5, 0 5" fill="var(--_arrow)" stroke="var(--_arrow)" stroke-width="0.75" stroke-linejoin="round" />
+  </marker>
+  <marker id="arrowhead-start" markerWidth="8" markerHeight="5" refX="1" refY="2.5" orient="auto-start-reverse">
+    <polygon points="8 0, 0 2.5, 8 5" fill="var(--_arrow)" stroke="var(--_arrow)" stroke-width="0.75" stroke-linejoin="round" />
+  </marker>
+</defs>
+<g class="subgraph" data-id="Client" data-label="1. Presentation Layer (Frontend UI - Vanilla JS / HTML5 / CSS3)">
+  <rect x="219.72883333333323" y="40" width="777.0844999999999" height="266.70000000000005" rx="0" ry="0" fill="var(--_group-fill)" stroke="var(--_node-stroke)" stroke-width="1" />
+  <rect x="219.72883333333323" y="40" width="777.0844999999999" height="28" rx="0" ry="0" fill="var(--_group-hdr)" stroke="var(--_node-stroke)" stroke-width="1" />
+  <text x="231.72883333333323" y="54" font-size="12" font-weight="600" fill="var(--_text-sec)" dy="4.199999999999999">1. Presentation Layer (Frontend UI - Vanilla JS / HTML5 / CSS3)</text>
+</g>
+<g class="subgraph" data-id="Server" data-label="2. Application Layer (FastAPI / Uvicorn ASGI Server)">
+  <rect x="307.00124999999986" y="366.70000000000005" width="1769.06" height="96.9" rx="0" ry="0" fill="var(--_group-fill)" stroke="var(--_node-stroke)" stroke-width="1" />
+  <rect x="307.00124999999986" y="366.70000000000005" width="1769.06" height="28" rx="0" ry="0" fill="var(--_group-hdr)" stroke="var(--_node-stroke)" stroke-width="1" />
+  <text x="319.00124999999986" y="380.70000000000005" font-size="12" font-weight="600" fill="var(--_text-sec)" dy="4.199999999999999">2. Application Layer (FastAPI / Uvicorn ASGI Server)</text>
+</g>
+<g class="subgraph" data-id="Core" data-label="3. Autonomous Agent Core (ReAct Loop &amp; Multi-LLM Router)">
+  <rect x="232.14599999999996" y="523.6" width="459.78099999999995" height="351.6" rx="0" ry="0" fill="var(--_group-fill)" stroke="var(--_node-stroke)" stroke-width="1" />
+  <rect x="232.14599999999996" y="523.6" width="459.78099999999995" height="28" rx="0" ry="0" fill="var(--_group-hdr)" stroke="var(--_node-stroke)" stroke-width="1" />
+  <text x="244.14599999999996" y="537.6" font-size="12" font-weight="600" fill="var(--_text-sec)" dy="4.199999999999999">3. Autonomous Agent Core (ReAct Loop &amp; Multi-LLM Router)</text>
+</g>
+<g class="subgraph" data-id="Tools" data-label="4. Tool Execution &amp; Local Persistence Layer">
+  <rect x="40" y="947.2" width="2050.64" height="110.9" rx="0" ry="0" fill="var(--_group-fill)" stroke="var(--_node-stroke)" stroke-width="1" />
+  <rect x="40" y="947.2" width="2050.64" height="28" rx="0" ry="0" fill="var(--_group-hdr)" stroke="var(--_node-stroke)" stroke-width="1" />
+  <text x="52" y="961.2" font-size="12" font-weight="600" fill="var(--_text-sec)" dy="4.199999999999999">4. Tool Execution &amp; Local Persistence Layer</text>
+</g>
+<polyline class="edge" data-from="LoreUI" data-to="API_Chat" data-style="solid" data-arrow-start="false" data-arrow-end="true" points="791.6313333333333,290.70000000000005 791.6313333333333,350.70000000000005 476.61524999999983,350.70000000000005 476.61524999999983,410.70000000000005" fill="none" stroke="var(--_line)" stroke-width="1" marker-end="url(#arrowhead)" />
+<polyline class="edge" data-from="MediaUI" data-to="API_Chat" data-style="solid" data-arrow-start="false" data-arrow-end="true" points="410.8318333333332,290.70000000000005 410.8318333333332,350.70000000000005 476.61524999999983,350.70000000000005 476.61524999999983,410.70000000000005" fill="none" stroke="var(--_line)" stroke-width="1" marker-end="url(#arrowhead)" />
+<polyline class="edge" data-from="API_Chat" data-to="PromptBuilder" data-style="solid" data-arrow-start="false" data-arrow-end="true" points="476.61524999999983,447.6 476.6152499999999,505.6 462.03649999999993,505.6 462.03649999999993,567.6" fill="none" stroke="var(--_line)" stroke-width="1" marker-end="url(#arrowhead)" />
+<polyline class="edge" data-from="PathGuard" data-to="FileIO" data-style="solid" data-arrow-start="false" data-arrow-end="true" points="462.03649999999993,859.2 462.03649999999993,925.2 651.5459999999999,925.2 651.5459999999999,991.2" fill="none" stroke="var(--_line)" stroke-width="1" marker-end="url(#arrowhead)" />
+<polyline class="edge" data-from="PathGuard" data-to="DocParser" data-style="solid" data-arrow-start="false" data-arrow-end="true" points="462.03649999999993,859.2 462.03649999999993,925.2 1439.821,925.2 1439.821,991.2" fill="none" stroke="var(--_line)" stroke-width="1" marker-end="url(#arrowhead)" />
+<polyline class="edge" data-from="PathGuard" data-to="OSTool" data-style="solid" data-arrow-start="false" data-arrow-end="true" points="462.03649999999993,859.2 462.03649999999993,925.2 1051.982,925.2 1051.982,991.2" fill="none" stroke="var(--_line)" stroke-width="1" marker-end="url(#arrowhead)" />
+<polyline class="edge" data-from="ToolLoop" data-to="WebTool" data-style="solid" data-arrow-start="false" data-arrow-end="true" points="462.03649999999993,774.3000000000001 462.03649999999993,798.3000000000001 248.14599999999996,798.3000000000001 248.14599999999996,991.2" fill="none" stroke="var(--_line)" stroke-width="1" marker-end="url(#arrowhead)" />
+<polyline class="edge" data-from="API_Mem" data-to="Storage" data-style="solid" data-arrow-start="true" data-arrow-end="true" points="1901.2602499999998,447.6 1901.2602499999998,719.4000000000001 1856.5589999999997,719.4000000000001 1856.5589999999997,991.2" fill="none" stroke="var(--_line)" stroke-width="1" marker-end="url(#arrowhead)" marker-start="url(#arrowhead-start)" />
+<polyline class="edge" data-from="API_Sess" data-to="Storage" data-style="solid" data-arrow-start="true" data-arrow-end="true" points="1558.62225,447.6 1558.62225,719.4000000000001 1856.5589999999997,719.4000000000001 1856.5589999999997,991.2" fill="none" stroke="var(--_line)" stroke-width="1" marker-end="url(#arrowhead)" marker-start="url(#arrowhead-start)" />
+<polyline class="edge" data-from="API_Set" data-to="Storage" data-style="solid" data-arrow-start="true" data-arrow-end="true" points="1190.7902499999998,447.6 1190.7902499999998,719.4000000000001 1856.5589999999997,719.4000000000001 1856.5589999999997,991.2" fill="none" stroke="var(--_line)" stroke-width="1" marker-end="url(#arrowhead)" marker-start="url(#arrowhead-start)" />
+<polyline class="edge" data-from="API_Rem" data-to="Storage" data-style="solid" data-arrow-start="true" data-arrow-end="true" points="818.5122499999999,447.6 818.5122499999999,719.4000000000001 1856.5589999999997,719.4000000000001 1856.5589999999997,991.2" fill="none" stroke="var(--_line)" stroke-width="1" marker-end="url(#arrowhead)" marker-start="url(#arrowhead-start)" />
+<polyline class="edge" data-from="ToolLoop" data-to="Storage" data-style="solid" data-arrow-start="true" data-arrow-end="true" points="462.03649999999993,774.3000000000001 462.03649999999993,798.3000000000001 1856.5589999999997,798.3000000000001 1856.5589999999997,991.2" fill="none" stroke="var(--_line)" stroke-width="1" marker-end="url(#arrowhead)" marker-start="url(#arrowhead-start)" />
+<polyline class="edge" data-from="UI" data-to="Pipeline" data-style="solid" data-arrow-start="false" data-arrow-end="true" points="791.6313333333331,120.9 791.6313333333331,168.9" fill="none" stroke="var(--_line)" stroke-width="1" marker-end="url(#arrowhead)" />
+<polyline class="edge" data-from="Pipeline" data-to="LoreUI" data-style="solid" data-arrow-start="false" data-arrow-end="true" points="791.6313333333331,205.8 791.6313333333333,253.8" fill="none" stroke="var(--_line)" stroke-width="1" marker-end="url(#arrowhead)" />
+<polyline class="edge" data-from="PromptBuilder" data-to="Router" data-style="solid" data-arrow-start="false" data-arrow-end="true" points="462.03649999999993,604.5 462.03649999999993,652.5" fill="none" stroke="var(--_line)" stroke-width="1" marker-end="url(#arrowhead)" />
+<polyline class="edge" data-from="Router" data-to="ToolLoop" data-style="solid" data-arrow-start="true" data-arrow-end="true" points="462.03649999999993,689.4000000000001 462.03649999999993,737.4000000000001" fill="none" stroke="var(--_line)" stroke-width="1" marker-end="url(#arrowhead)" marker-start="url(#arrowhead-start)" />
+<polyline class="edge" data-from="ToolLoop" data-to="PathGuard" data-style="solid" data-arrow-start="false" data-arrow-end="true" points="462.03649999999993,774.3000000000001 462.03649999999993,798.3000000000001 462.03649999999993,798.3000000000001 462.03649999999993,822.3000000000001" fill="none" stroke="var(--_line)" stroke-width="1" marker-end="url(#arrowhead)" />
+<g class="node" data-id="UI" data-label="반응형 대시보드 &amp; 채팅 뷰포트" data-shape="rectangle">
+  <rect x="673.5853333333332" y="84" width="236.09199999999998" height="36.900000000000006" rx="0" ry="0" fill="var(--_node-fill)" stroke="var(--_node-stroke)" stroke-width="0.75" />
+  <text x="791.6313333333333" y="102.45" text-anchor="middle" font-size="13" font-weight="500" fill="var(--_text)" dy="4.55">반응형 대시보드 &amp; 채팅 뷰포트</text>
+</g>
+<g class="node" data-id="Pipeline" data-label="전처리/후처리 파이프라인 (Regex &amp; Trigger 스크립트)" data-shape="rectangle">
+  <rect x="602.4493333333332" y="168.9" width="378.3639999999999" height="36.900000000000006" rx="0" ry="0" fill="var(--_node-fill)" stroke="var(--_node-stroke)" stroke-width="0.75" />
+  <text x="791.6313333333333" y="187.35000000000002" text-anchor="middle" font-size="13" font-weight="500" fill="var(--_text)" dy="4.55">전처리/후처리 파이프라인 (Regex &amp; Trigger 스크립트)</text>
+</g>
+<g class="node" data-id="LoreUI" data-label="컨텍스트 제어 (노트/채팅 로어북 &amp; 프롬프트 모듈)" data-shape="rectangle">
+  <rect x="613.9348333333332" y="253.8" width="355.393" height="36.900000000000006" rx="0" ry="0" fill="var(--_node-fill)" stroke="var(--_node-stroke)" stroke-width="0.75" />
+  <text x="791.6313333333333" y="272.25" text-anchor="middle" font-size="13" font-weight="500" fill="var(--_text)" dy="4.55">컨텍스트 제어 (노트/채팅 로어북 &amp; 프롬프트 모듈)</text>
+</g>
+<g class="node" data-id="MediaUI" data-label="멀티모달 입력 (음성 STT/TTS, 이미지·문서 첨부)" data-shape="rectangle">
+  <rect x="235.72883333333323" y="253.8" width="350.20599999999996" height="36.900000000000006" rx="0" ry="0" fill="var(--_node-fill)" stroke="var(--_node-stroke)" stroke-width="0.75" />
+  <text x="410.8318333333332" y="272.25" text-anchor="middle" font-size="13" font-weight="500" fill="var(--_text)" dy="4.55">멀티모달 입력 (음성 STT/TTS, 이미지·문서 첨부)</text>
+</g>
+<g class="node" data-id="API_Chat" data-label="POST /api/chat (에이전트 대화 엔드포인트)" data-shape="rectangle">
+  <rect x="323.00124999999986" y="410.70000000000005" width="307.228" height="36.900000000000006" rx="0" ry="0" fill="var(--_node-fill)" stroke="var(--_node-stroke)" stroke-width="0.75" />
+  <text x="476.61524999999983" y="429.15000000000003" text-anchor="middle" font-size="13" font-weight="500" fill="var(--_text)" dy="4.55">POST /api/chat (에이전트 대화 엔드포인트)</text>
+</g>
+<g class="node" data-id="API_Mem" data-label="GET·POST /api/memory (하이퍼 메모리 관리)" data-shape="rectangle">
+  <rect x="1742.4592499999999" y="410.70000000000005" width="317.602" height="36.900000000000006" rx="0" ry="0" fill="var(--_node-fill)" stroke="var(--_node-stroke)" stroke-width="0.75" />
+  <text x="1901.2602499999998" y="429.15000000000003" text-anchor="middle" font-size="13" font-weight="500" fill="var(--_text)" dy="4.55">GET·POST /api/memory (하이퍼 메모리 관리)</text>
+</g>
+<g class="node" data-id="API_Sess" data-label="GET·POST /api/sessions (대화 세션 동기화)" data-shape="rectangle">
+  <rect x="1402.78525" y="410.70000000000005" width="311.674" height="36.900000000000006" rx="0" ry="0" fill="var(--_node-fill)" stroke="var(--_node-stroke)" stroke-width="0.75" />
+  <text x="1558.62225" y="429.15000000000003" text-anchor="middle" font-size="13" font-weight="500" fill="var(--_text)" dy="4.55">GET·POST /api/sessions (대화 세션 동기화)</text>
+</g>
+<g class="node" data-id="API_Set" data-label="GET·POST /api/settings (API 키·모델·작업공간 설정)" data-shape="rectangle">
+  <rect x="1006.7952499999999" y="410.70000000000005" width="367.98999999999995" height="36.900000000000006" rx="0" ry="0" fill="var(--_node-fill)" stroke="var(--_node-stroke)" stroke-width="0.75" />
+  <text x="1190.7902499999998" y="429.15000000000003" text-anchor="middle" font-size="13" font-weight="500" fill="var(--_text)" dy="4.55">GET·POST /api/settings (API 키·모델·작업공간 설정)</text>
+</g>
+<g class="node" data-id="API_Rem" data-label="GET /api/reminders (백그라운드 타이머/알림)" data-shape="rectangle">
+  <rect x="658.2292499999999" y="410.70000000000005" width="320.566" height="36.900000000000006" rx="0" ry="0" fill="var(--_node-fill)" stroke="var(--_node-stroke)" stroke-width="0.75" />
+  <text x="818.5122499999999" y="429.15000000000003" text-anchor="middle" font-size="13" font-weight="500" fill="var(--_text)" dy="4.55">GET /api/reminders (백그라운드 타이머/알림)</text>
+</g>
+<g class="node" data-id="Router" data-label="Multi-LLM 라우터 (Gemini / OpenAI / Anthropic)" data-shape="rectangle">
+  <rect x="305.08799999999997" y="652.5" width="313.89699999999993" height="36.900000000000006" rx="0" ry="0" fill="var(--_node-fill)" stroke="var(--_node-stroke)" stroke-width="0.75" />
+  <text x="462.03649999999993" y="670.95" text-anchor="middle" font-size="13" font-weight="500" fill="var(--_text)" dy="4.55">Multi-LLM 라우터 (Gemini / OpenAI / Anthropic)</text>
+</g>
+<g class="node" data-id="PromptBuilder" data-label="동적 시스템 프롬프트 조립기 (페르소나 + 장기기억 + 로어북)" data-shape="rectangle">
+  <rect x="250.6245" y="567.6" width="422.8239999999999" height="36.900000000000006" rx="0" ry="0" fill="var(--_node-fill)" stroke="var(--_node-stroke)" stroke-width="0.75" />
+  <text x="462.03649999999993" y="586.0500000000001" text-anchor="middle" font-size="13" font-weight="500" fill="var(--_text)" dy="4.55">동적 시스템 프롬프트 조립기 (페르소나 + 장기기억 + 로어북)</text>
+</g>
+<g class="node" data-id="ToolLoop" data-label="자율 도구 호출 루프 (Max 5 Iterations Function Calling)" data-shape="rectangle">
+  <rect x="279.153" y="737.4000000000001" width="365.7669999999999" height="36.900000000000006" rx="0" ry="0" fill="var(--_node-fill)" stroke="var(--_node-stroke)" stroke-width="0.75" />
+  <text x="462.03649999999993" y="755.8500000000001" text-anchor="middle" font-size="13" font-weight="500" fill="var(--_text)" dy="4.55">자율 도구 호출 루프 (Max 5 Iterations Function Calling)</text>
+</g>
+<g class="node" data-id="PathGuard" data-label="작업 공간 보안 샌드박스 검증기 (validate_workspace_path)" data-shape="rectangle">
+  <rect x="259.14599999999996" y="822.3000000000001" width="405.78099999999995" height="36.900000000000006" rx="0" ry="0" fill="var(--_node-fill)" stroke="var(--_node-stroke)" stroke-width="0.75" />
+  <text x="462.03649999999993" y="840.7500000000001" text-anchor="middle" font-size="13" font-weight="500" fill="var(--_text)" dy="4.55">작업 공간 보안 샌드박스 검증기 (validate_workspace_path)</text>
+</g>
+<g class="node" data-id="FileIO" data-label="로컬 파일 I/O 도구 (읽기/쓰기/부분수정/키워드검색)" data-shape="rectangle">
+  <rect x="468.2919999999999" y="991.2" width="366.50800000000004" height="36.900000000000006" rx="0" ry="0" fill="var(--_node-fill)" stroke="var(--_node-stroke)" stroke-width="0.75" />
+  <text x="651.5459999999999" y="1009.6500000000001" text-anchor="middle" font-size="13" font-weight="500" fill="var(--_text)" dy="4.55">로컬 파일 I/O 도구 (읽기/쓰기/부분수정/키워드검색)</text>
+</g>
+<g class="node" data-id="DocParser" data-label="오피스·문서 파서 (.docx / .xlsx / .pdf 텍스트 추출)" data-shape="rectangle">
+  <rect x="1269.164" y="991.2" width="341.3139999999999" height="36.900000000000006" rx="0" ry="0" fill="var(--_node-fill)" stroke="var(--_node-stroke)" stroke-width="0.75" />
+  <text x="1439.821" y="1009.6500000000001" text-anchor="middle" font-size="13" font-weight="500" fill="var(--_text)" dy="4.55">오피스·문서 파서 (.docx / .xlsx / .pdf 텍스트 추출)</text>
+</g>
+<g class="node" data-id="WebTool" data-label="실시간 웹 검색 &amp; 스크래핑 (DuckDuckGo / BeautifulSoup)" data-shape="rectangle">
+  <rect x="56" y="991.2" width="384.2919999999999" height="36.900000000000006" rx="0" ry="0" fill="var(--_node-fill)" stroke="var(--_node-stroke)" stroke-width="0.75" />
+  <text x="248.14599999999996" y="1009.6500000000001" text-anchor="middle" font-size="13" font-weight="500" fill="var(--_text)" dy="4.55">실시간 웹 검색 &amp; 스크래핑 (DuckDuckGo / BeautifulSoup)</text>
+</g>
+<g class="node" data-id="OSTool" data-label="OS 제어 도구 (Windows 탐색기 실행 / 타이머 스케줄러)" data-shape="rectangle">
+  <rect x="862.8" y="991.2" width="378.364" height="36.900000000000006" rx="0" ry="0" fill="var(--_node-fill)" stroke="var(--_node-stroke)" stroke-width="0.75" />
+  <text x="1051.982" y="1009.6500000000001" text-anchor="middle" font-size="13" font-weight="500" fill="var(--_text)" dy="4.55">OS 제어 도구 (Windows 탐색기 실행 / 타이머 스케줄러)</text>
+</g>
+<g class="node" data-id="Storage" data-label="로컬 JSON 영속 저장소 (settings / chat_sessions / hyper_memory)" data-shape="cylinder">
+  <rect x="1638.4779999999998" y="998.2" width="436.1619999999999" height="36.900000000000006" fill="var(--_node-fill)" stroke="none" />
+  <line x1="1638.4779999999998" y1="998.2" x2="1638.4779999999998" y2="1035.1000000000001" stroke="var(--_node-stroke)" stroke-width="0.75" />
+  <line x1="2074.64" y1="998.2" x2="2074.64" y2="1035.1000000000001" stroke="var(--_node-stroke)" stroke-width="0.75" />
+  <ellipse cx="1856.5589999999997" cy="1035.1000000000001" rx="218.08099999999996" ry="7" fill="var(--_node-fill)" stroke="var(--_node-stroke)" stroke-width="0.75" />
+  <ellipse cx="1856.5589999999997" cy="998.2" rx="218.08099999999996" ry="7" fill="var(--_node-fill)" stroke="var(--_node-stroke)" stroke-width="0.75" />
+  <text x="1856.5589999999997" y="1016.6500000000001" text-anchor="middle" font-size="13" font-weight="500" fill="var(--_text)" dy="4.55">로컬 JSON 영속 저장소 (settings / chat_sessions / hyper_memory)</text>
+</g>
+</svg>

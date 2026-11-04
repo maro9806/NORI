@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>MINORI - Personal Digital Secretary</title>
-  <link rel="stylesheet" href="style.css?v=4.1">
+  <link rel="stylesheet" href="style.css?v=4.5">
 </head>
 <body class="theme-dark">
   <div class="app-layout">
@@ -44,6 +44,11 @@
         <span>불러오기</span>
       </button>
     </div>
+  </div>
+
+  <!-- 실시간 대화 제목/본문 검색 바 -->
+  <div class="chat-search-box" style="padding: 0 2px; margin-bottom: 6px;">
+    <input type="text" id="chatSearchInput" class="dark-input" placeholder="🔍 대화 제목 또는 본문 검색..." style="font-size: 11px; padding: 6px 10px;">
   </div>
 
   <!-- 폴더(노트) 및 채팅 세션 계층 트리 -->
@@ -93,12 +98,17 @@
         <div class="card workspace-card">
           <div class="card-header">
             <span>기본 작업 경로 (Workspace)</span>
-            <button class="icon-btn-sm" id="btnSaveWorkspace" title="경로 저장">
-              <svg class="icon-svg-sm" viewBox="0 0 24 24"><path d="M17 3H5c-1.11 0-2 .9-2 2v14c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V7l-4-4zm-5 16c-1.66 0-3-1.34-3-3s1.34-3 3-3 3 1.34 3 3-1.34 3-3 3zm3-10H5V5h10v4z"/></svg>
-            </button>
+            <div style="display: flex; gap: 4px; align-items: center;">
+              <button class="icon-btn-sm" id="btnBrowseWorkspace" title="윈도우 폴더 찾아보기 (마우스로 폴더 선택)">
+                <svg class="icon-svg-sm" viewBox="0 0 24 24"><path d="M10 4H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V8c0-1.1-.9-2-2-2h-8l-2-2z"/></svg>
+              </button>
+              <button class="icon-btn-sm" id="btnSaveWorkspace" title="경로 저장">
+                <svg class="icon-svg-sm" viewBox="0 0 24 24"><path d="M17 3H5c-1.11 0-2 .9-2 2v14c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V7l-4-4zm-5 16c-1.66 0-3-1.34-3-3s1.34-3 3-3 3 1.34 3 3-1.34 3-3 3zm3-10H5V5h10v4z"/></svg>
+              </button>
+            </div>
           </div>
           <div class="workspace-input-box">
-            <input type="text" id="workspacePathInput" class="dark-input" value="D:\AIproject" placeholder="예: C:\MyProject 또는 D:\AIproject">
+            <input type="text" id="workspacePathInput" class="dark-input" value="D:\AIproject" placeholder="예: C:\MyProject 또는 [폴더 아이콘] 클릭">
           </div>
           <div class="workspace-status" id="workspaceStatusMsg">경로가 유효합니다.</div>
         </div>
@@ -133,6 +143,10 @@
           </div>
         </div>
         <div class="active-timers-bar" id="activeTimersBar"></div>
+        <button type="button" class="btn-solid-secondary danger" id="btnShutdownServer" title="백그라운드 MINORI 서버 종료" style="margin-left: auto; padding: 5px 10px; font-size: 11px; border-radius: 6px; display: flex; align-items: center; gap: 4px;">
+          <svg class="icon-svg-sm" viewBox="0 0 24 24"><path d="M13 3h-2v10h2V3zm4.83 2.17l-1.42 1.42C17.99 7.86 19 9.81 19 12c0 3.87-3.13 7-7 7s-7-3.13-7-7c0-2.19 1.01-4.14 2.58-5.42L6.17 5.17C4.23 6.82 3 9.26 3 12c0 4.97 4.03 9 9 9s9-4.03 9-9c0-2.74-1.23-5.18-3.17-6.83z"/></svg>
+          <span>서버 종료</span>
+        </button>
       </div>
 
       <!-- 드래그 앤 드롭 오버레이 -->
@@ -657,7 +671,44 @@
           <!-- [VIEW A] 정규식 스크립트 뷰 -->
           <div class="script-view" id="scriptRegexView">
             <div class="script-info-banner">
-              IN 매칭 텍스트를 OUT으로 변경합니다. (입력/출력/리퀘스트/디스플레이 4가지 모드 & @@emo 지원)
+              특정 텍스트 패턴(IN)을 감지해 시각적 HTML/CSS UI 위젯(상태창, 알림박스, 게이지 등)이나 원하는 문장(OUT)으로 실시간 변환합니다.
+            </div>
+
+            <!-- AI 답변에 [상태창] 자동 포함 스위치 & 실시간 시각적 CSS 미리보기 -->
+            <div class="regex-studio-box">
+              <div style="display: flex; align-items: center; justify-content: space-between; gap: 8px; padding-bottom: 8px; border-bottom: 1px solid rgba(148, 163, 184, 0.18);">
+                <div>
+                  <div style="font-size: 12px; font-weight: 700; color: var(--emo-color, #38bdf8);">🤖 미노리 답변 하단에 [상태창] 자동 표시</div>
+                  <div style="font-size: 10.5px; color: var(--text-muted); margin-top: 2px;">정해진 항목이나 줄 수 제한 없이 <code>[상태창]...[/상태창]</code>(또는 <code>[상태창: ...]</code>) 안에 무엇을 적든 자동으로 상태창 UI와 감정 색상이 적용됩니다.</div>
+                </div>
+                <div style="display: flex; align-items: center; gap: 8px; flex-shrink: 0;">
+                  <button type="button" class="regex-preset-chip" id="btnRestoreDefaultVisualRegex" title="기본 상태창 정규식 초기 복구" style="border-color: rgba(52, 211, 153, 0.5); color: #a7f3d0;">🔄 기본 상태창 복원</button>
+                  <label class="custom-checkbox" style="margin: 0;">
+                    <input type="checkbox" id="chkAutoStatusWindow">
+                    <span class="checkmark"></span>
+                    <span class="check-text" style="font-weight: 600; color: #bae6fd;">자동 출력</span>
+                  </label>
+                </div>
+              </div>
+
+              <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; align-items: stretch;">
+                <div style="display: flex; flex-direction: column; gap: 4px;">
+                  <label style="font-size: 10.5px; color: #94a3b8; font-weight: 600;">📝 텍스트 원본 입력 (아무 항목/줄 수나 자유롭게 작성)</label>
+                  <textarea id="regexLiveTestInput" class="dark-textarea" rows="5" style="font-family: monospace; font-size: 11.5px; resize: vertical;" placeholder="[상태창] 안에 원하는 항목을 자유롭게 적어보세요.">[상태창]
+상태: 온라인 · 정상 가동
+기분: 기쁨
+동기화율: 96%
+현재작업: 어떤 항목이나 줄 수를 적든 자유롭게 렌더링됩니다
+[/상태창]</textarea>
+                </div>
+                <div style="display: flex; flex-direction: column; gap: 4px;">
+                  <div style="display: flex; justify-content: space-between; align-items: center;">
+                    <label style="font-size: 10.5px; color: var(--emo-color, #38bdf8); font-weight: 600;">✨ 실시간 CSS 렌더링 미리보기</label>
+                    <button type="button" class="btn-solid-primary" id="btnSendRegexPreviewToChat" style="padding: 2px 8px; font-size: 10.5px;">💬 실제 채팅창에 띄워보기</button>
+                  </div>
+                  <div id="regexLivePreviewOutput" class="regex-preview-render-box"></div>
+                </div>
+              </div>
             </div>
 
             <div class="script-card-list" id="regexScriptList">
@@ -733,9 +784,9 @@
             <div class="active-model-card" style="display: flex; align-items: center; justify-content: space-between; padding: 10px 14px; background: rgba(30, 41, 59, 0.7); border: 1px solid var(--border-color); border-radius: 6px;">
               <div>
                 <span style="font-size: 11px; color: var(--text-muted); display: block;">현재 적용된 AI 모델</span>
-                <strong id="activeModelBadge" style="font-size: 13px; color: var(--primary); font-family: monospace;">gemini-3.8-flash</strong>
+                <strong id="activeModelBadge" style="font-size: 13px; color: var(--primary); font-family: monospace;">미설정 (모델을 선택하세요)</strong>
               </div>
-              <span class="active-status-tag" style="font-size: 10px; background: rgba(16, 185, 129, 0.2); color: #10b981; border: 1px solid #10b981; padding: 3px 8px; border-radius: 12px; font-weight: 600;">ACTIVE</span>
+              <span class="active-status-tag" id="activeModelStatusTag" style="font-size: 10px; background: rgba(148, 163, 184, 0.15); color: #94a3b8; border: 1px solid #64748b; padding: 3px 8px; border-radius: 12px; font-weight: 600;">UNSET</span>
             </div>
 
             <!-- Custom Model Input (자유 입력창) -->
@@ -744,7 +795,7 @@
                 <label for="modelNameInput">AI 모델명 (자유 직접 입력)</label>
                 <span class="help-icon" title="API 모델 목록은 수시로 바뀌므로 원하는 최신 모델(Gemini 4 Argon, 3.8/3.6 Flash, OpenAI gpt-4o, Claude, Ollama 등)을 자유롭게 직접 입력하세요.">?</span>
               </div>
-              <input type="text" id="modelNameInput" class="dark-input" placeholder="예: gemini-4-argon, gemini-3.8-flash, gemini-3.6-flash, gpt-4o, llama3.2" style="font-family: monospace; font-size: 12px;" value="gemini-3.8-flash">
+              <input type="text" id="modelNameInput" class="dark-input" placeholder="아래 프리셋을 클릭하거나 모델명을 직접 입력하세요 (예: gemini-3.8-flash)" style="font-family: monospace; font-size: 12px;" value="">
             </div>
 
             <!-- Working Preset Chips (현재 검증된 모델 안내 및 클릭 시 자동 완성) -->
@@ -752,7 +803,7 @@
               <label class="field-label-sm" style="margin-bottom: 6px; color: var(--text-muted);">현재 정상 동작 확인된 모델 프리셋 (클릭 시 자동 입력)</label>
               <div class="model-preset-chips" id="modelPresetChips">
                 <button type="button" class="preset-chip" data-model="gemini-4-argon">🌟 gemini-4-argon (플래그십 아르곤)</button>
-                <button type="button" class="preset-chip active" data-model="gemini-3.8-flash">⚡ gemini-3.8-flash (고속 플래시 추천)</button>
+                <button type="button" class="preset-chip" data-model="gemini-3.8-flash">⚡ gemini-3.8-flash (고속 플래시 추천)</button>
                 <button type="button" class="preset-chip" data-model="gemini-3.6-flash">✨ gemini-3.6-flash (안정 표준)</button>
                 <button type="button" class="preset-chip" data-model="gpt-4o">🟢 gpt-4o (OpenAI)</button>
                 <button type="button" class="preset-chip" data-model="gpt-4o-mini">🟢 gpt-4o-mini (경량 OpenAI)</button>
@@ -826,15 +877,25 @@
 
         <!-- [SUB-PANEL: 하이퍼 메모리 (장기 기억)] -->
         <div class="sub-panel" id="memoryPanel" style="display: none;">
-          <div class="panel-title-area" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+          <div class="panel-title-area" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; gap: 8px; flex-wrap: wrap;">
             <div>
               <div class="panel-title" style="margin-bottom: 2px;">🧠 하이퍼 메모리 (Hyper Memory Engine)</div>
               <p style="font-size: 11px; color: var(--text-muted); margin: 0;">미노리가 대화 속에서 자율적으로 기억한 장기 기억 및 사용자 지침입니다. 프롬프트에 자동 주입되어 영구 유지됩니다.</p>
             </div>
-            <button class="btn-solid-secondary btn-sm" id="btnRefreshMemories" title="기억 새로고침" style="padding: 6px 12px;">
-              <svg class="icon-svg-sm" viewBox="0 0 24 24"><path d="M17.65 6.35C16.2 4.9 14.21 4 12 4c-4.42 0-7.99 3.58-7.99 8s3.57 8 7.99 8c3.73 0 6.84-2.55 7.73-6h-2.08c-.82 2.33-3.04 4-5.65 4-3.31 0-6-2.69-6-6s2.69-6 6-6c1.66 0 3.14.69 4.22 1.78L13 11h7V4l-2.35 2.35z"/></svg>
-              <span>새로고침</span>
-            </button>
+            <div style="display: flex; gap: 6px; align-items: center;">
+              <button class="btn-solid-secondary btn-sm" id="btnExportMemories" title="하이퍼 메모리 JSON 내보내기" style="padding: 6px 10px;">
+                <svg class="icon-svg-sm" viewBox="0 0 24 24"><path d="M19 9h-4V3H9v6H5l7 7 7-7zM5 18v2h14v-2H5z"/></svg>
+                <span>내보내기</span>
+              </button>
+              <button class="btn-solid-secondary btn-sm" id="btnImportMemories" title="하이퍼 메모리 JSON 불러오기" style="padding: 6px 10px;">
+                <svg class="icon-svg-sm" viewBox="0 0 24 24"><path d="M9 16h6v-6h4l-7-7-7 7h4zm-4 2h14v2H5z"/></svg>
+                <span>불러오기</span>
+              </button>
+              <button class="btn-solid-secondary btn-sm" id="btnRefreshMemories" title="기억 새로고침" style="padding: 6px 10px;">
+                <svg class="icon-svg-sm" viewBox="0 0 24 24"><path d="M17.65 6.35C16.2 4.9 14.21 4 12 4c-4.42 0-7.99 3.58-7.99 8s3.57 8 7.99 8c3.73 0 6.84-2.55 7.73-6h-2.08c-.82 2.33-3.04 4-5.65 4-3.31 0-6-2.69-6-6s2.69-6 6-6c1.66 0 3.14.69 4.22 1.78L13 11h7V4l-2.35 2.35z"/></svg>
+                <span>새로고침</span>
+              </button>
+            </div>
           </div>
 
           <!-- 신규 기억 수동 등록 카드 -->
@@ -883,6 +944,6 @@
     </main>
 
   </div>
-  <script src="app.js?v=4.1"></script>
+  <script src="app.js?v=4.5"></script>
 </body>
 </html>

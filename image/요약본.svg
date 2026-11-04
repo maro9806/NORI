@@ -1,0 +1,82 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1382.943 276.5" width="1382.943" height="276.5" style="--bg:#18181B;--fg:#F4F4F5;--line:#71717A;--muted:#A1A1AA;--surface:#27272A;--border:#3F3F46;background:var(--bg)">
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap');
+  text { font-family: 'Inter', system-ui, sans-serif; }
+  svg {
+    /* Derived from --bg and --fg (overridable via --line, --accent, etc.) */
+    --_text:          var(--fg);
+    --_text-sec:      var(--muted, color-mix(in srgb, var(--fg) 60%, var(--bg)));
+    --_text-muted:    var(--muted, color-mix(in srgb, var(--fg) 40%, var(--bg)));
+    --_text-faint:    color-mix(in srgb, var(--fg) 25%, var(--bg));
+    --_line:          var(--line, color-mix(in srgb, var(--fg) 50%, var(--bg)));
+    --_arrow:         var(--accent, color-mix(in srgb, var(--fg) 85%, var(--bg)));
+    --_node-fill:     var(--surface, color-mix(in srgb, var(--fg) 3%, var(--bg)));
+    --_node-stroke:   var(--border, color-mix(in srgb, var(--fg) 20%, var(--bg)));
+    --_group-fill:    var(--bg);
+    --_group-hdr:     color-mix(in srgb, var(--fg) 5%, var(--bg));
+    --_inner-stroke:  color-mix(in srgb, var(--fg) 12%, var(--bg));
+    --_key-badge:     color-mix(in srgb, var(--fg) 10%, var(--bg));
+  }
+</style>
+<defs>
+  <marker id="arrowhead" markerWidth="8" markerHeight="5" refX="7" refY="2.5" orient="auto">
+    <polygon points="0 0, 8 2.5, 0 5" fill="var(--_arrow)" stroke="var(--_arrow)" stroke-width="0.75" stroke-linejoin="round" />
+  </marker>
+  <marker id="arrowhead-start" markerWidth="8" markerHeight="5" refX="1" refY="2.5" orient="auto-start-reverse">
+    <polygon points="8 0, 0 2.5, 8 5" fill="var(--_arrow)" stroke="var(--_arrow)" stroke-width="0.75" stroke-linejoin="round" />
+  </marker>
+</defs>
+<g class="subgraph" data-id="MINORI" data-label="MINORI 온디바이스 AI 비서 시스템 (Standalone Desktop App)">
+  <rect x="304.08500000000004" y="40" width="802.1899999999999" height="174.5" rx="0" ry="0" fill="var(--_group-fill)" stroke="var(--_node-stroke)" stroke-width="1" />
+  <rect x="304.08500000000004" y="40" width="802.1899999999999" height="28" rx="0" ry="0" fill="var(--_group-hdr)" stroke="var(--_node-stroke)" stroke-width="1" />
+  <text x="316.08500000000004" y="54" font-size="12" font-weight="600" fill="var(--_text-sec)" dy="4.199999999999999">MINORI 온디바이스 AI 비서 시스템 (Standalone Desktop App)</text>
+</g>
+<polyline class="edge" data-from="User" data-to="FE_Box" data-style="solid" data-arrow-start="true" data-arrow-end="true" points="256.08500000000004,154.7 304.08500000000004,154.7 320.08500000000004,154.7" fill="none" stroke="var(--_line)" stroke-width="1" marker-end="url(#arrowhead)" marker-start="url(#arrowhead-start)" />
+<polyline class="edge" data-from="BE_Box" data-to="ExtLLM" data-style="solid" data-arrow-start="true" data-arrow-end="true" points="782.471,154.70000000000002 806.471,154.70000000000002 806.471,202.60000000000002 1154.2749999999999,202.60000000000002" fill="none" stroke="var(--_line)" stroke-width="1" marker-end="url(#arrowhead)" marker-start="url(#arrowhead-start)" />
+<polyline class="edge" data-from="Sec_Box" data-to="LocalFS" data-style="solid" data-arrow-start="true" data-arrow-end="true" points="1090.275,127.80000000000001 1106.275,127.80000000000001 1142.2749999999999,127.80000000000001 1142.2749999999999,106.80000000000001 1154.2749999999999,106.80000000000001" fill="none" stroke="var(--_line)" stroke-width="1" marker-end="url(#arrowhead)" marker-start="url(#arrowhead-start)" />
+<polyline class="edge" data-from="FE_Box" data-to="BE_Box" data-style="solid" data-arrow-start="true" data-arrow-end="true" points="545.062,154.7 593.062,154.7" fill="none" stroke="var(--_line)" stroke-width="1" marker-end="url(#arrowhead)" marker-start="url(#arrowhead-start)" />
+<polyline class="edge" data-from="BE_Box" data-to="Sec_Box" data-style="solid" data-arrow-start="true" data-arrow-end="true" points="782.471,154.70000000000002 806.471,154.70000000000002 806.471,127.80000000000001 830.471,127.80000000000001" fill="none" stroke="var(--_line)" stroke-width="1" marker-end="url(#arrowhead)" marker-start="url(#arrowhead-start)" />
+<g class="node" data-id="User" data-label="사용자 (음성 / 텍스트 / 문서)" data-shape="stadium">
+  <rect x="40" y="136.25" width="216.085" height="36.900000000000006" rx="18.450000000000003" ry="18.450000000000003" fill="var(--_node-fill)" stroke="var(--_node-stroke)" stroke-width="0.75" />
+  <text x="148.04250000000002" y="154.7" text-anchor="middle" font-size="13" font-weight="500" fill="var(--_text)" dy="4.55">사용자 (음성 / 텍스트 / 문서)</text>
+</g>
+<g class="node" data-id="ExtLLM" data-label="외부 LLM API
+(Gemini / OpenAI / Claude)" data-shape="cylinder">
+  <rect x="1154.2749999999999" y="175.70000000000002" width="188.668" height="53.80000000000001" fill="var(--_node-fill)" stroke="none" />
+  <line x1="1154.2749999999999" y1="175.70000000000002" x2="1154.2749999999999" y2="229.50000000000003" stroke="var(--_node-stroke)" stroke-width="0.75" />
+  <line x1="1342.9429999999998" y1="175.70000000000002" x2="1342.9429999999998" y2="229.50000000000003" stroke="var(--_node-stroke)" stroke-width="0.75" />
+  <ellipse cx="1248.609" cy="229.50000000000003" rx="94.334" ry="7" fill="var(--_node-fill)" stroke="var(--_node-stroke)" stroke-width="0.75" />
+  <ellipse cx="1248.609" cy="175.70000000000002" rx="94.334" ry="7" fill="var(--_node-fill)" stroke="var(--_node-stroke)" stroke-width="0.75" />
+  <text x="1248.609" y="202.60000000000002" text-anchor="middle" font-size="13" font-weight="500" fill="var(--_text)"><tspan x="1248.609" dy="-3.9000000000000012">외부 LLM API</tspan><tspan x="1248.609" dy="16.900000000000002">(Gemini / OpenAI / Claude)</tspan></text>
+</g>
+<g class="node" data-id="LocalFS" data-label="로컬 워크스페이스
+&amp; 영속 데이터(JSON)" data-shape="cylinder">
+  <rect x="1154.2749999999999" y="79.9" width="170.88399999999996" height="53.80000000000001" fill="var(--_node-fill)" stroke="none" />
+  <line x1="1154.2749999999999" y1="79.9" x2="1154.2749999999999" y2="133.70000000000002" stroke="var(--_node-stroke)" stroke-width="0.75" />
+  <line x1="1325.1589999999999" y1="79.9" x2="1325.1589999999999" y2="133.70000000000002" stroke="var(--_node-stroke)" stroke-width="0.75" />
+  <ellipse cx="1239.7169999999999" cy="133.70000000000002" rx="85.44199999999998" ry="7" fill="var(--_node-fill)" stroke="var(--_node-stroke)" stroke-width="0.75" />
+  <ellipse cx="1239.7169999999999" cy="79.9" rx="85.44199999999998" ry="7" fill="var(--_node-fill)" stroke="var(--_node-stroke)" stroke-width="0.75" />
+  <text x="1239.7169999999999" y="106.80000000000001" text-anchor="middle" font-size="13" font-weight="500" fill="var(--_text)"><tspan x="1239.7169999999999" dy="-3.9000000000000012">로컬 워크스페이스</tspan><tspan x="1239.7169999999999" dy="16.900000000000002">&amp; 영속 데이터(JSON)</tspan></text>
+</g>
+<g class="node" data-id="FE_Box" data-label="프론트엔드 UI 계층
+- 실시간 채팅 &amp; 세션 검색
+- 로어북 &amp; 정규식 파이프라인
+- STT / TTS 음성 인터페이스" data-shape="rectangle">
+  <rect x="320.08500000000004" y="110.9" width="224.97699999999998" height="87.60000000000001" rx="0" ry="0" fill="var(--_node-fill)" stroke="var(--_node-stroke)" stroke-width="0.75" />
+  <text x="432.5735" y="154.70000000000002" text-anchor="middle" font-size="13" font-weight="500" fill="var(--_text)"><tspan x="432.5735" dy="-20.8">프론트엔드 UI 계층</tspan><tspan x="432.5735" dy="16.900000000000002">- 실시간 채팅 &amp; 세션 검색</tspan><tspan x="432.5735" dy="16.900000000000002">- 로어북 &amp; 정규식 파이프라인</tspan><tspan x="432.5735" dy="16.900000000000002">- STT / TTS 음성 인터페이스</tspan></text>
+</g>
+<g class="node" data-id="BE_Box" data-label="백엔드 &amp; 에이전트 코어
+- FastAPI 비동기 서버
+- 멀티 LLM 스위칭 엔진
+- ReAct 자율 추론 루프" data-shape="rectangle">
+  <rect x="593.062" y="110.9" width="189.40899999999996" height="87.60000000000001" rx="0" ry="0" fill="var(--_node-fill)" stroke="var(--_node-stroke)" stroke-width="0.75" />
+  <text x="687.7665" y="154.70000000000002" text-anchor="middle" font-size="13" font-weight="500" fill="var(--_text)"><tspan x="687.7665" dy="-20.8">백엔드 &amp; 에이전트 코어</tspan><tspan x="687.7665" dy="16.900000000000002">- FastAPI 비동기 서버</tspan><tspan x="687.7665" dy="16.900000000000002">- 멀티 LLM 스위칭 엔진</tspan><tspan x="687.7665" dy="16.900000000000002">- ReAct 자율 추론 루프</tspan></text>
+</g>
+<g class="node" data-id="Sec_Box" data-label="보안 샌드박스 &amp; 도구 계층
+- 허용 경로 검증 (Path Validation)
+- 로컬 파일 제어 &amp; 오피스/PDF 파싱
+- 하이퍼 메모리 &amp; 실시간 웹 검색" data-shape="rectangle">
+  <rect x="830.471" y="84" width="259.804" height="87.60000000000001" rx="0" ry="0" fill="var(--_node-fill)" stroke="var(--_node-stroke)" stroke-width="0.75" />
+  <text x="960.373" y="127.80000000000001" text-anchor="middle" font-size="13" font-weight="500" fill="var(--_text)"><tspan x="960.373" dy="-20.8">보안 샌드박스 &amp; 도구 계층</tspan><tspan x="960.373" dy="16.900000000000002">- 허용 경로 검증 (Path Validation)</tspan><tspan x="960.373" dy="16.900000000000002">- 로컬 파일 제어 &amp; 오피스/PDF 파싱</tspan><tspan x="960.373" dy="16.900000000000002">- 하이퍼 메모리 &amp; 실시간 웹 검색</tspan></text>
+</g>
+</svg>

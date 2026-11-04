@@ -1,0 +1,192 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1798.8804999999998 940.45" width="1798.8804999999998" height="940.45" style="--bg:#18181B;--fg:#F4F4F5;--line:#71717A;--muted:#A1A1AA;--surface:#27272A;--border:#3F3F46;background:var(--bg)">
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap');
+  text { font-family: 'Inter', system-ui, sans-serif; }
+  svg {
+    /* Derived from --bg and --fg (overridable via --line, --accent, etc.) */
+    --_text:          var(--fg);
+    --_text-sec:      var(--muted, color-mix(in srgb, var(--fg) 60%, var(--bg)));
+    --_text-muted:    var(--muted, color-mix(in srgb, var(--fg) 40%, var(--bg)));
+    --_text-faint:    color-mix(in srgb, var(--fg) 25%, var(--bg));
+    --_line:          var(--line, color-mix(in srgb, var(--fg) 50%, var(--bg)));
+    --_arrow:         var(--accent, color-mix(in srgb, var(--fg) 85%, var(--bg)));
+    --_node-fill:     var(--surface, color-mix(in srgb, var(--fg) 3%, var(--bg)));
+    --_node-stroke:   var(--border, color-mix(in srgb, var(--fg) 20%, var(--bg)));
+    --_group-fill:    var(--bg);
+    --_group-hdr:     color-mix(in srgb, var(--fg) 5%, var(--bg));
+    --_inner-stroke:  color-mix(in srgb, var(--fg) 12%, var(--bg));
+    --_key-badge:     color-mix(in srgb, var(--fg) 10%, var(--bg));
+  }
+</style>
+<defs>
+  <marker id="seq-arrow" markerWidth="8" markerHeight="5" refX="8" refY="2.5" orient="auto-start-reverse">
+    <polygon points="0 0, 8 2.5, 0 5" fill="var(--_arrow)" />
+  </marker>
+  <marker id="seq-arrow-open" markerWidth="8" markerHeight="5" refX="8" refY="2.5" orient="auto-start-reverse">
+    <polyline points="0 0, 8 2.5, 0 5" fill="none" stroke="var(--_arrow)" stroke-width="1" />
+  </marker>
+</defs>
+<line class="lifeline" data-actor="User" x1="70" y1="92.45" x2="70" y2="910.45" stroke="var(--_line)" stroke-width="0.75" stroke-dasharray="6 4" />
+<line class="lifeline" data-actor="FE" x1="312.264" y1="70" x2="312.264" y2="910.45" stroke="var(--_line)" stroke-width="0.75" stroke-dasharray="6 4" />
+<line class="lifeline" data-actor="BE" x1="642.4399999999999" y1="70" x2="642.4399999999999" y2="910.45" stroke="var(--_line)" stroke-width="0.75" stroke-dasharray="6 4" />
+<line class="lifeline" data-actor="Agent" x1="871.042" y1="70" x2="871.042" y2="910.45" stroke="var(--_line)" stroke-width="0.75" stroke-dasharray="6 4" />
+<line class="lifeline" data-actor="LLM" x1="1226.466" y1="70" x2="1226.466" y2="910.45" stroke="var(--_line)" stroke-width="0.75" stroke-dasharray="6 4" />
+<line class="lifeline" data-actor="Tool" x1="1476.4035" y1="70" x2="1476.4035" y2="910.45" stroke="var(--_line)" stroke-width="0.75" stroke-dasharray="6 4" />
+<line class="lifeline" data-actor="DB" x1="1687.4384999999997" y1="70" x2="1687.4384999999997" y2="910.45" stroke="var(--_line)" stroke-width="0.75" stroke-dasharray="6 4" />
+<g class="block" data-type="loop" data-label="자율 도구 호출 루프 (최대 5회 반복)">
+  <rect x="781.082" y="440.45" width="794.9145" height="180.00000000000006" rx="0" ry="0" fill="none" stroke="var(--_node-stroke)" stroke-width="1" />
+  <rect x="781.082" y="440.45" width="279" height="20" fill="var(--_group-hdr)" stroke="var(--_node-stroke)" stroke-width="1" />
+  <text x="789.082" y="450.45" font-size="11" font-weight="600" fill="var(--_text-sec)" dy="3.8499999999999996">loop [자율 도구 호출 루프 (최대 5회 반복)]</text>
+</g>
+<g class="message" data-from="User" data-to="FE" data-label="자연어 명령 및 첨부파일 입력" data-line-style="solid" data-arrow-head="filled" data-self="false" data-step="1">
+  <line x1="70" y1="112.45" x2="312.264" y2="112.45" stroke="var(--_line)" stroke-width="1" marker-end="url(#seq-arrow)" />
+  <rect x="104.632" y="94.3" width="173" height="16.3" rx="2" ry="2" fill="var(--bg)" />
+  <text x="191.132" y="102.45" font-size="11" text-anchor="middle" font-weight="400" fill="var(--_text-muted)" dy="3.8499999999999996">자연어 명령 및 첨부파일 입력</text>
+  <circle class="sequence-number" cx="70" cy="112.45" r="9" fill="var(--_arrow)" stroke="var(--bg)" stroke-width="1" />
+  <text x="70" y="112.45" class="sequence-number-label" font-size="10" text-anchor="middle" font-weight="600" fill="var(--bg)" dy="3.5">1</text>
+</g>
+<g class="message" data-from="FE" data-to="FE" data-label="입력 정규식(Regex) 변환 및 로어북 토큰 계산" data-line-style="solid" data-arrow-head="filled" data-self="true" data-step="2">
+  <polyline points="312.264,152.45 342.264,152.45 342.264,172.45 312.264,172.45" fill="none" stroke="var(--_line)" stroke-width="1" marker-end="url(#seq-arrow)" />
+  <rect x="347.264" y="154.29999999999998" width="257" height="16.3" rx="2" ry="2" fill="var(--bg)" />
+  <text x="350.264" y="162.45" font-size="11" text-anchor="start" font-weight="400" fill="var(--_text-muted)" dy="3.8499999999999996">입력 정규식(Regex) 변환 및 로어북 토큰 계산</text>
+  <circle class="sequence-number" cx="312.264" cy="152.45" r="9" fill="var(--_arrow)" stroke="var(--bg)" stroke-width="1" />
+  <text x="312.264" y="152.45" class="sequence-number-label" font-size="10" text-anchor="middle" font-weight="600" fill="var(--bg)" dy="3.5">2</text>
+</g>
+<g class="message" data-from="FE" data-to="BE" data-label="POST /api/chat (메시지, 이전 대화 맥락, 로어북, 첨부파일)" data-line-style="solid" data-arrow-head="filled" data-self="false" data-step="3">
+  <line x1="312.264" y1="222.45" x2="642.4399999999999" y2="222.45" stroke="var(--_line)" stroke-width="1" marker-end="url(#seq-arrow)" />
+  <rect x="316.852" y="204.29999999999998" width="321" height="16.3" rx="2" ry="2" fill="var(--bg)" />
+  <text x="477.352" y="212.45" font-size="11" text-anchor="middle" font-weight="400" fill="var(--_text-muted)" dy="3.8499999999999996">POST /api/chat (메시지, 이전 대화 맥락, 로어북, 첨부파일)</text>
+  <circle class="sequence-number" cx="312.264" cy="222.45" r="9" fill="var(--_arrow)" stroke="var(--bg)" stroke-width="1" />
+  <text x="312.264" y="222.45" class="sequence-number-label" font-size="10" text-anchor="middle" font-weight="600" fill="var(--bg)" dy="3.5">3</text>
+</g>
+<g class="message" data-from="BE" data-to="DB" data-label="API 키, 활성 모델, 하이퍼 메모리(장기 기억) 로드" data-line-style="solid" data-arrow-head="filled" data-self="false" data-step="4">
+  <line x1="642.4399999999999" y1="262.45" x2="1687.4384999999997" y2="262.45" stroke="var(--_line)" stroke-width="1" marker-end="url(#seq-arrow)" />
+  <rect x="1027.93925" y="244.29999999999998" width="274" height="16.3" rx="2" ry="2" fill="var(--bg)" />
+  <text x="1164.93925" y="252.45" font-size="11" text-anchor="middle" font-weight="400" fill="var(--_text-muted)" dy="3.8499999999999996">API 키, 활성 모델, 하이퍼 메모리(장기 기억) 로드</text>
+  <circle class="sequence-number" cx="642.4399999999999" cy="262.45" r="9" fill="var(--_arrow)" stroke="var(--bg)" stroke-width="1" />
+  <text x="642.4399999999999" y="262.45" class="sequence-number-label" font-size="10" text-anchor="middle" font-weight="600" fill="var(--bg)" dy="3.5">4</text>
+</g>
+<g class="message" data-from="BE" data-to="Agent" data-label="run_agent_loop() 실행 요청" data-line-style="solid" data-arrow-head="filled" data-self="false" data-step="5">
+  <line x1="642.4399999999999" y1="302.45" x2="871.042" y2="302.45" stroke="var(--_line)" stroke-width="1" marker-end="url(#seq-arrow)" />
+  <rect x="680.241" y="284.3" width="153" height="16.3" rx="2" ry="2" fill="var(--bg)" />
+  <text x="756.741" y="292.45" font-size="11" text-anchor="middle" font-weight="400" fill="var(--_text-muted)" dy="3.8499999999999996">run_agent_loop() 실행 요청</text>
+  <circle class="sequence-number" cx="642.4399999999999" cy="302.45" r="9" fill="var(--_arrow)" stroke="var(--bg)" stroke-width="1" />
+  <text x="642.4399999999999" y="302.45" class="sequence-number-label" font-size="10" text-anchor="middle" font-weight="600" fill="var(--bg)" dy="3.5">5</text>
+</g>
+<g class="message" data-from="Agent" data-to="Agent" data-label="시스템 프롬프트 조립 (페르소나 + 장기기억 + 보안규칙)" data-line-style="solid" data-arrow-head="filled" data-self="true" data-step="6">
+  <polyline points="871.042,342.45 901.042,342.45 901.042,362.45 871.042,362.45" fill="none" stroke="var(--_line)" stroke-width="1" marker-end="url(#seq-arrow)" />
+  <rect x="906.042" y="344.3" width="316" height="16.3" rx="2" ry="2" fill="var(--bg)" />
+  <text x="909.042" y="352.45" font-size="11" text-anchor="start" font-weight="400" fill="var(--_text-muted)" dy="3.8499999999999996">시스템 프롬프트 조립 (페르소나 + 장기기억 + 보안규칙)</text>
+  <circle class="sequence-number" cx="871.042" cy="342.45" r="9" fill="var(--_arrow)" stroke="var(--bg)" stroke-width="1" />
+  <text x="871.042" y="342.45" class="sequence-number-label" font-size="10" text-anchor="middle" font-weight="600" fill="var(--bg)" dy="3.5">6</text>
+</g>
+<g class="message" data-from="Agent" data-to="LLM" data-label="1차 추론 요청 (사용자 메시지 + 가용 도구 스키마 10종)" data-line-style="solid" data-arrow-head="filled" data-self="false" data-step="7">
+  <line x1="871.042" y1="412.45" x2="1226.466" y2="412.45" stroke="var(--_line)" stroke-width="1" marker-end="url(#seq-arrow)" />
+  <rect x="899.2539999999999" y="394.3" width="299" height="16.3" rx="2" ry="2" fill="var(--bg)" />
+  <text x="1048.754" y="402.45" font-size="11" text-anchor="middle" font-weight="400" fill="var(--_text-muted)" dy="3.8499999999999996">1차 추론 요청 (사용자 메시지 + 가용 도구 스키마 10종)</text>
+  <circle class="sequence-number" cx="871.042" cy="412.45" r="9" fill="var(--_arrow)" stroke="var(--bg)" stroke-width="1" />
+  <text x="871.042" y="412.45" class="sequence-number-label" font-size="10" text-anchor="middle" font-weight="600" fill="var(--bg)" dy="3.5">7</text>
+</g>
+<g class="message" data-from="LLM" data-to="Agent" data-label="도구 호출 결정 (Function Call: 예 - read_local_file, search_web)" data-line-style="dashed" data-arrow-head="filled" data-self="false" data-step="8">
+  <line x1="1226.466" y1="480.45" x2="871.042" y2="480.45" stroke="var(--_line)" stroke-width="1" stroke-dasharray="6 4" marker-end="url(#seq-arrow)" />
+  <rect x="879.7539999999999" y="462.3" width="338" height="16.3" rx="2" ry="2" fill="var(--bg)" />
+  <text x="1048.754" y="470.45" font-size="11" text-anchor="middle" font-weight="400" fill="var(--_text-muted)" dy="3.8499999999999996">도구 호출 결정 (Function Call: 예 - read_local_file, search_web)</text>
+  <circle class="sequence-number" cx="1226.466" cy="480.45" r="9" fill="var(--_arrow)" stroke="var(--bg)" stroke-width="1" />
+  <text x="1226.466" y="480.45" class="sequence-number-label" font-size="10" text-anchor="middle" font-weight="600" fill="var(--bg)" dy="3.5">8</text>
+</g>
+<g class="message" data-from="Agent" data-to="Tool" data-label="validate_workspace_path() 보안 경로 검증 후 도구 실행" data-line-style="solid" data-arrow-head="filled" data-self="false" data-step="9">
+  <line x1="871.042" y1="520.45" x2="1476.4035" y2="520.45" stroke="var(--_line)" stroke-width="1" marker-end="url(#seq-arrow)" />
+  <rect x="1021.2227499999999" y="502.30000000000007" width="305" height="16.3" rx="2" ry="2" fill="var(--bg)" />
+  <text x="1173.72275" y="510.45000000000005" font-size="11" text-anchor="middle" font-weight="400" fill="var(--_text-muted)" dy="3.8499999999999996">validate_workspace_path() 보안 경로 검증 후 도구 실행</text>
+  <circle class="sequence-number" cx="871.042" cy="520.45" r="9" fill="var(--_arrow)" stroke="var(--bg)" stroke-width="1" />
+  <text x="871.042" y="520.45" class="sequence-number-label" font-size="10" text-anchor="middle" font-weight="600" fill="var(--bg)" dy="3.5">9</text>
+</g>
+<g class="message" data-from="Tool" data-to="Agent" data-label="도구 실행 결과 반환 (파일 본문, 검색 결과, 메모리 저장 등)" data-line-style="dashed" data-arrow-head="filled" data-self="false" data-step="10">
+  <line x1="1476.4035" y1="560.45" x2="871.042" y2="560.45" stroke="var(--_line)" stroke-width="1" stroke-dasharray="6 4" marker-end="url(#seq-arrow)" />
+  <rect x="1010.2227499999999" y="542.3000000000001" width="327" height="16.3" rx="2" ry="2" fill="var(--bg)" />
+  <text x="1173.72275" y="550.45" font-size="11" text-anchor="middle" font-weight="400" fill="var(--_text-muted)" dy="3.8499999999999996">도구 실행 결과 반환 (파일 본문, 검색 결과, 메모리 저장 등)</text>
+  <circle class="sequence-number" cx="1476.4035" cy="560.45" r="9" fill="var(--_arrow)" stroke="var(--bg)" stroke-width="1" />
+  <text x="1476.4035" y="560.45" class="sequence-number-label" font-size="10" text-anchor="middle" font-weight="600" fill="var(--bg)" dy="3.5">10</text>
+</g>
+<g class="message" data-from="Agent" data-to="LLM" data-label="도구 실행 결과 전달 및 후속 추론 요청" data-line-style="solid" data-arrow-head="filled" data-self="false" data-step="11">
+  <line x1="871.042" y1="600.45" x2="1226.466" y2="600.45" stroke="var(--_line)" stroke-width="1" marker-end="url(#seq-arrow)" />
+  <rect x="939.7539999999999" y="582.3000000000001" width="218" height="16.3" rx="2" ry="2" fill="var(--bg)" />
+  <text x="1048.754" y="590.45" font-size="11" text-anchor="middle" font-weight="400" fill="var(--_text-muted)" dy="3.8499999999999996">도구 실행 결과 전달 및 후속 추론 요청</text>
+  <circle class="sequence-number" cx="871.042" cy="600.45" r="9" fill="var(--_arrow)" stroke="var(--bg)" stroke-width="1" />
+  <text x="871.042" y="600.45" class="sequence-number-label" font-size="10" text-anchor="middle" font-weight="600" fill="var(--bg)" dy="3.5">11</text>
+</g>
+<g class="message" data-from="LLM" data-to="Agent" data-label="최종 응답 텍스트 및 추론 로그(Thoughts) 반환" data-line-style="dashed" data-arrow-head="filled" data-self="false" data-step="12">
+  <line x1="1226.466" y1="640.45" x2="871.042" y2="640.45" stroke="var(--_line)" stroke-width="1" stroke-dasharray="6 4" marker-end="url(#seq-arrow)" />
+  <rect x="919.2539999999999" y="622.3000000000001" width="259" height="16.3" rx="2" ry="2" fill="var(--bg)" />
+  <text x="1048.754" y="630.45" font-size="11" text-anchor="middle" font-weight="400" fill="var(--_text-muted)" dy="3.8499999999999996">최종 응답 텍스트 및 추론 로그(Thoughts) 반환</text>
+  <circle class="sequence-number" cx="1226.466" cy="640.45" r="9" fill="var(--_arrow)" stroke="var(--bg)" stroke-width="1" />
+  <text x="1226.466" y="640.45" class="sequence-number-label" font-size="10" text-anchor="middle" font-weight="600" fill="var(--bg)" dy="3.5">12</text>
+</g>
+<g class="message" data-from="Agent" data-to="BE" data-label="응답 데이터 + 생성된 알림 정보 반환" data-line-style="dashed" data-arrow-head="filled" data-self="false" data-step="13">
+  <line x1="871.042" y1="680.45" x2="642.4399999999999" y2="680.45" stroke="var(--_line)" stroke-width="1" stroke-dasharray="6 4" marker-end="url(#seq-arrow)" />
+  <rect x="651.741" y="662.3000000000001" width="210" height="16.3" rx="2" ry="2" fill="var(--bg)" />
+  <text x="756.741" y="670.45" font-size="11" text-anchor="middle" font-weight="400" fill="var(--_text-muted)" dy="3.8499999999999996">응답 데이터 + 생성된 알림 정보 반환</text>
+  <circle class="sequence-number" cx="871.042" cy="680.45" r="9" fill="var(--_arrow)" stroke="var(--bg)" stroke-width="1" />
+  <text x="871.042" y="680.45" class="sequence-number-label" font-size="10" text-anchor="middle" font-weight="600" fill="var(--bg)" dy="3.5">13</text>
+</g>
+<g class="message" data-from="BE" data-to="FE" data-label="JSON 응답 (reply, thoughts, created_reminders)" data-line-style="dashed" data-arrow-head="filled" data-self="false" data-step="14">
+  <line x1="642.4399999999999" y1="720.45" x2="312.264" y2="720.45" stroke="var(--_line)" stroke-width="1" stroke-dasharray="6 4" marker-end="url(#seq-arrow)" />
+  <rect x="348.352" y="702.3000000000001" width="258" height="16.3" rx="2" ry="2" fill="var(--bg)" />
+  <text x="477.352" y="710.45" font-size="11" text-anchor="middle" font-weight="400" fill="var(--_text-muted)" dy="3.8499999999999996">JSON 응답 (reply, thoughts, created_reminders)</text>
+  <circle class="sequence-number" cx="642.4399999999999" cy="720.45" r="9" fill="var(--_arrow)" stroke="var(--bg)" stroke-width="1" />
+  <text x="642.4399999999999" y="720.45" class="sequence-number-label" font-size="10" text-anchor="middle" font-weight="600" fill="var(--bg)" dy="3.5">14</text>
+</g>
+<g class="message" data-from="FE" data-to="FE" data-label="출력 정규식 변환, 마크다운 렌더링, TTS 음성 출력" data-line-style="solid" data-arrow-head="filled" data-self="true" data-step="15">
+  <polyline points="312.264,760.45 342.264,760.45 342.264,780.45 312.264,780.45" fill="none" stroke="var(--_line)" stroke-width="1" marker-end="url(#seq-arrow)" />
+  <rect x="347.264" y="762.3000000000001" width="286" height="16.3" rx="2" ry="2" fill="var(--bg)" />
+  <text x="350.264" y="770.45" font-size="11" text-anchor="start" font-weight="400" fill="var(--_text-muted)" dy="3.8499999999999996">출력 정규식 변환, 마크다운 렌더링, TTS 음성 출력</text>
+  <circle class="sequence-number" cx="312.264" cy="760.45" r="9" fill="var(--_arrow)" stroke="var(--bg)" stroke-width="1" />
+  <text x="312.264" y="760.45" class="sequence-number-label" font-size="10" text-anchor="middle" font-weight="600" fill="var(--bg)" dy="3.5">15</text>
+</g>
+<g class="message" data-from="FE" data-to="DB" data-label="POST /api/sessions (대화 내역 로컬 디스크 자동 영속화)" data-line-style="solid" data-arrow-head="filled" data-self="false" data-step="16">
+  <line x1="312.264" y1="830.45" x2="1687.4384999999997" y2="830.45" stroke="var(--_line)" stroke-width="1" marker-end="url(#seq-arrow)" />
+  <rect x="843.3512499999999" y="812.3000000000001" width="313" height="16.3" rx="2" ry="2" fill="var(--bg)" />
+  <text x="999.8512499999999" y="820.45" font-size="11" text-anchor="middle" font-weight="400" fill="var(--_text-muted)" dy="3.8499999999999996">POST /api/sessions (대화 내역 로컬 디스크 자동 영속화)</text>
+  <circle class="sequence-number" cx="312.264" cy="830.45" r="9" fill="var(--_arrow)" stroke="var(--bg)" stroke-width="1" />
+  <text x="312.264" y="830.45" class="sequence-number-label" font-size="10" text-anchor="middle" font-weight="600" fill="var(--bg)" dy="3.5">16</text>
+</g>
+<g class="message" data-from="FE" data-to="User" data-label="최종 답변 및 [생각 과정(Thoughts)] 표시" data-line-style="dashed" data-arrow-head="filled" data-self="false" data-step="17">
+  <line x1="312.264" y1="870.45" x2="70" y2="870.45" stroke="var(--_line)" stroke-width="1" stroke-dasharray="6 4" marker-end="url(#seq-arrow)" />
+  <rect x="78.632" y="852.3000000000001" width="225" height="16.3" rx="2" ry="2" fill="var(--bg)" />
+  <text x="191.132" y="860.45" font-size="11" text-anchor="middle" font-weight="400" fill="var(--_text-muted)" dy="3.8499999999999996">최종 답변 및 [생각 과정(Thoughts)] 표시</text>
+  <circle class="sequence-number" cx="312.264" cy="870.45" r="9" fill="var(--_arrow)" stroke="var(--bg)" stroke-width="1" />
+  <text x="312.264" y="870.45" class="sequence-number-label" font-size="10" text-anchor="middle" font-weight="600" fill="var(--bg)" dy="3.5">17</text>
+</g>
+<g class="actor" data-id="User" data-label="사용자" data-type="actor">
+  <g transform="translate(52,32) scale(1.5)">
+    <path d="M21 12C21 16.9706 16.9706 21 12 21C7.02944 21 3 16.9706 3 12C3 7.02944 7.02944 3 12 3C16.9706 3 21 7.02944 21 12Z" fill="none" stroke="var(--_line)" stroke-width="0.6666666666666666" />
+    <path d="M15 10C15 11.6569 13.6569 13 12 13C10.3431 13 9 11.6569 9 10C9 8.34315 10.3431 7 12 7C13.6569 7 15 8.34315 15 10Z" fill="none" stroke="var(--_line)" stroke-width="0.6666666666666666" />
+    <path d="M5.62842 18.3563C7.08963 17.0398 9.39997 16 12 16C14.6 16 16.9104 17.0398 18.3716 18.3563" fill="none" stroke="var(--_line)" stroke-width="0.6666666666666666" />
+  </g>
+  <text x="70" y="84" font-size="13" text-anchor="middle" font-weight="500" fill="var(--_text)" dy="4.55">사용자</text>
+</g>
+<g class="actor" data-id="FE" data-label="Frontend (app.js)" data-type="participant">
+  <rect x="245.2715" y="30" width="133.985" height="40" rx="4" ry="4" fill="var(--_node-fill)" stroke="var(--_node-stroke)" stroke-width="1" />
+  <text x="312.264" y="50" font-size="13" text-anchor="middle" font-weight="500" fill="var(--_text)" dy="4.55">Frontend (app.js)</text>
+</g>
+<g class="actor" data-id="BE" data-label="FastAPI Server (app.py)" data-type="participant">
+  <rect x="554.329" y="30" width="176.22199999999998" height="40" rx="4" ry="4" fill="var(--_node-fill)" stroke="var(--_node-stroke)" stroke-width="1" />
+  <text x="642.4399999999999" y="50" font-size="13" text-anchor="middle" font-weight="500" fill="var(--_text)" dy="4.55">FastAPI Server (app.py)</text>
+</g>
+<g class="actor" data-id="Agent" data-label="Agent Core (agent.py)" data-type="participant">
+  <rect x="791.082" y="30" width="159.92" height="40" rx="4" ry="4" fill="var(--_node-fill)" stroke="var(--_node-stroke)" stroke-width="1" />
+  <text x="871.042" y="50" font-size="13" text-anchor="middle" font-weight="500" fill="var(--_text)" dy="4.55">Agent Core (agent.py)</text>
+</g>
+<g class="actor" data-id="LLM" data-label="Multi-LLM API (Gemini/GPT/Claude)" data-type="participant">
+  <rect x="1106.1215" y="30" width="240.6889999999999" height="40" rx="4" ry="4" fill="var(--_node-fill)" stroke="var(--_node-stroke)" stroke-width="1" />
+  <text x="1226.466" y="50" font-size="13" text-anchor="middle" font-weight="500" fill="var(--_text)" dy="4.55">Multi-LLM API (Gemini/GPT/Claude)</text>
+</g>
+<g class="actor" data-id="Tool" data-label="Sandbox Tools (tools.py)" data-type="participant">
+  <rect x="1386.8104999999998" y="30" width="179.18599999999998" height="40" rx="4" ry="4" fill="var(--_node-fill)" stroke="var(--_node-stroke)" stroke-width="1" />
+  <text x="1476.4035" y="50" font-size="13" text-anchor="middle" font-weight="500" fill="var(--_text)" dy="4.55">Sandbox Tools (tools.py)</text>
+</g>
+<g class="actor" data-id="DB" data-label="Local Storage (JSON)" data-type="participant">
+  <rect x="1605.9964999999997" y="30" width="162.88399999999996" height="40" rx="4" ry="4" fill="var(--_node-fill)" stroke="var(--_node-stroke)" stroke-width="1" />
+  <text x="1687.4384999999997" y="50" font-size="13" text-anchor="middle" font-weight="500" fill="var(--_text)" dy="4.55">Local Storage (JSON)</text>
+</g>
+</svg>

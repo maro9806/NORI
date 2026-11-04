@@ -13,6 +13,17 @@ document.addEventListener('DOMContentLoaded', () => {
       .replace(/\n/g, '<br>');
   }
 
+  // 줄바꿈(\n)을 <br>로 바꾸지 않는 순수 HTML 속성/텍스트에어리어 이스케이프 함수
+  function escapeHtmlPlain(str) {
+    if (str === undefined || str === null) return '';
+    return String(str)
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;')
+      .replace(/'/g, '&#039;');
+  }
+
   // --- Cyber Toast UI Notification (Zero browser alert) ---
   let toastContainer = document.getElementById('cyberToastContainer');
   if (!toastContainer) {
@@ -165,6 +176,22 @@ document.addEventListener('DOMContentLoaded', () => {
     if (!text) return '';
     let md = String(text);
 
+    // -1. 정규식 스크립트(OUT) 등에서 생성된 커스텀 HTML/CSS 위젯 블록 보호
+    // 마크다운(_ * 등)이나 줄바꿈(\n -> <br>)이 HTML/CSS 레이아웃을 깨뜨리지 않도록 플레이스홀더로 분리
+    const htmlBlocks = [];
+    md = md.replace(/<style\b[^>]*>[\s\S]*?<\/style>/gi, (match) => {
+      const idx = htmlBlocks.length;
+      htmlBlocks.push(match.replace(/\r?\n/g, ' '));
+      return `\uE000HB${idx}\uE001`;
+    });
+    md = md.replace(/<(div|section|table|details|aside|article)\b[^>]*>[\s\S]*?<\/\1>/gi, (match) => {
+      const idx = htmlBlocks.length;
+      // 태그와 태그 사이의 단순 들여쓰기 줄바꿈만 정리하여 <br> 삽입 없이 깔끔한 CSS 레이아웃 유지
+      const cleanHtml = match.replace(/>\s*\r?\n\s*</g, '><');
+      htmlBlocks.push(cleanHtml);
+      return `\uE000HB${idx}\uE001`;
+    });
+
     // 0. 코드 블록 임시 보관 (```lang\ncode\n```) - 마크다운 기호(_ * $)가 없는 안전한 유니코드 구분자 사용
     const codeBlocks = [];
     md = md.replace(/```([a-zA-Z0-9_\-\+]*)\n([\s\S]*?)```/g, (match, lang, code) => {
@@ -271,6 +298,9 @@ document.addEventListener('DOMContentLoaded', () => {
     });
     mdLinks.forEach((lnkHtml, idx) => {
       md = md.replace(`\uE000LNK${idx}\uE001`, lnkHtml);
+    });
+    htmlBlocks.forEach((htmlBlock, idx) => {
+      md = md.replace(`\uE000HB${idx}\uE001`, htmlBlock);
     });
 
     return md;
@@ -388,6 +418,20 @@ document.addEventListener('DOMContentLoaded', () => {
     if (tabSettingsBtn) tabSettingsBtn.classList.remove('active');
     if (mainChatSection) mainChatSection.style.display = 'flex';
     if (mainSettingsSection) mainSettingsSection.style.display = 'none';
+
+    // 설정창에서 정규식/CSS 스크립트를 수정한 뒤 채팅 화면으로 돌아오면 기존 메시지에도 즉시 재렌더링 반영
+    if (typeof chatViewport !== 'undefined' && chatViewport) {
+      chatViewport.querySelectorAll('.chat-message').forEach(msgEl => {
+        if (msgEl.dataset.isGuide === 'true' || msgEl.querySelector('.guide-message-body')) return;
+        const raw = msgEl.dataset.rawContent;
+        const textSpan = msgEl.querySelector('.message-text');
+        if (raw && textSpan) {
+          let displayContent = applyRegexPipeline(raw, 'display');
+          displayContent = parseMarkdown(parseTriggerButtons(displayContent));
+          textSpan.innerHTML = displayContent;
+        }
+      });
+    }
   }
 
   function showSettingsView(initialCategory = 'advanced') {
@@ -420,7 +464,7 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   // ==========================================
-  // 3. 캐릭터 감정 모드 (Emotion System for @@emo)
+  // 3. 캐릭터 감정 모드 & 동적 컬러 팔레트 (Emotion System)
   // ==========================================
   const avatarEmoji = document.getElementById('avatarEmoji');
   const statusIndicator = document.getElementById('statusIndicator');
@@ -431,82 +475,252 @@ document.addEventListener('DOMContentLoaded', () => {
   let emotionLocked = false;
 
   const emotionEmojiMap = {
-    '기쁨': '[기쁨]', 'happy': '[기쁨]', 'smile': '[미소]', '미소': '[미소]',
-    '슬픔': '[슬픔]', 'sad': '[슬픔]', '우울': '[우울]',
-    '화남': '[경계]', 'angry': '[경계]', '분노': '[경계]',
-    '생각중': '[추론]', 'thinking': '[추론]',
-    '놀람': '[감지]', 'surprise': '[감지]',
-    '사랑': '[신뢰]', 'love': '[신뢰]',
-    '기본': '[대기]', 'default': '[대기]'
+    '기쁨': '[기쁨]', '행복': '[기쁨]', '신남': '[기쁨]', 'happy': '[기쁨]',
+    '미소': '[미소]', '평온': '[미소]', 'smile': '[미소]',
+    '슬픔': '[슬픔]', '우울': '[우울]', '걱정': '[슬픔]', 'sad': '[슬픔]',
+    '화남': '[경계]', '분노': '[경계]', '경계': '[경계]', '짜증': '[경계]', 'angry': '[경계]',
+    '생각중': '[추론]', '추론': '[추론]', '집중': '[추론]', '분석': '[추론]', 'thinking': '[추론]',
+    '놀람': '[감지]', '당황': '[감지]', '감지': '[감지]', 'surprise': '[감지]',
+    '사랑': '[신뢰]', '신뢰': '[신뢰]', '설렘': '[신뢰]', '호감': '[신뢰]', 'love': '[신뢰]',
+    '기본': '[대기]', '대기': '[대기]', 'default': '[대기]'
   };
+
+  function getEmotionPalette(emoRaw) {
+    const e = String(emoRaw || '').trim().toLowerCase();
+    if (/기쁨|행복|신남|즐거|최고|happy|joy/.test(e)) {
+      return { color: '#10b981', glow: 'rgba(16, 185, 129, 0.5)', bg: 'rgba(16, 185, 129, 0.14)', label: '기쁨' };
+    }
+    if (/미소|평온|차분|온화|친절|smile|calm/.test(e)) {
+      return { color: '#2dd4bf', glow: 'rgba(45, 212, 191, 0.5)', bg: 'rgba(45, 212, 191, 0.14)', label: '미소' };
+    }
+    if (/슬픔|우울|눈물|시무룩|걱정|아쉬움|sad|gloom/.test(e)) {
+      return { color: '#6366f1', glow: 'rgba(99, 102, 241, 0.5)', bg: 'rgba(99, 102, 241, 0.15)', label: '슬픔' };
+    }
+    if (/화남|분노|경계|위험|침입|짜증|비상|angry|alert|rage/.test(e)) {
+      return { color: '#f43f5e', glow: 'rgba(244, 63, 94, 0.55)', bg: 'rgba(244, 63, 94, 0.15)', label: '경계/화남' };
+    }
+    if (/생각|추론|집중|분석|탐색|고민|thinking|focus/.test(e)) {
+      return { color: '#a855f7', glow: 'rgba(168, 85, 247, 0.5)', bg: 'rgba(168, 85, 247, 0.15)', label: '생각중' };
+    }
+    if (/놀람|당황|깜짝|감지|충격|surprise|shock/.test(e)) {
+      return { color: '#f59e0b', glow: 'rgba(245, 158, 11, 0.5)', bg: 'rgba(245, 158, 11, 0.15)', label: '놀람' };
+    }
+    if (/사랑|신뢰|설렘|호감|애정|부끄|love|trust|shy/.test(e)) {
+      return { color: '#ec4899', glow: 'rgba(236, 72, 153, 0.5)', bg: 'rgba(236, 72, 153, 0.15)', label: '신뢰/사랑' };
+    }
+    return { color: '#38bdf8', glow: 'rgba(56, 189, 248, 0.45)', bg: 'rgba(56, 189, 248, 0.14)', label: emoRaw || '기본' };
+  }
 
   function setEmotion(emotionName, lock = true) {
     if (!emotionName) return;
     currentEmotion = emotionName.trim();
     if (lock) emotionLocked = true;
 
+    const palette = getEmotionPalette(currentEmotion);
+    document.documentElement.style.setProperty('--emo-color', palette.color);
+    document.documentElement.style.setProperty('--emo-glow', palette.glow);
+    document.documentElement.style.setProperty('--emo-bg', palette.bg);
+
     const badgeLabel = emotionEmojiMap[currentEmotion.toLowerCase()] || emotionEmojiMap[currentEmotion] || `[${currentEmotion}]`;
-    if (statusIndicator) statusIndicator.textContent = `온라인 · ${badgeLabel}`;
+    if (statusIndicator) {
+      statusIndicator.textContent = `온라인 · ${badgeLabel}`;
+      statusIndicator.style.color = palette.color;
+    }
     if (emotionBadge) emotionBadge.textContent = `감정 상태: ${currentEmotion}`;
     if (emotionBadgeBox) emotionBadgeBox.style.display = 'inline-flex';
 
-    // 사이버 코어 발광 컬러 반응
+    // 사이버 코어 발광 컬러 실시간 반응
     const cyberCore = document.getElementById('cyberCore');
     if (cyberCore) {
-      if (['화남', 'angry', '분노'].includes(currentEmotion.toLowerCase())) {
-        cyberCore.style.filter = 'drop-shadow(0 0 16px rgba(247, 118, 142, 0.8))';
-      } else if (['생각중', 'thinking'].includes(currentEmotion.toLowerCase())) {
-        cyberCore.style.filter = 'drop-shadow(0 0 16px rgba(122, 162, 247, 0.8))';
-      } else {
-        cyberCore.style.filter = '';
-      }
+      cyberCore.style.filter = `drop-shadow(0 0 16px ${palette.glow})`;
     }
+  }
+
+  // 어떤 형식/줄 수/항목이 들어와도 자동으로 상태창 HTML/CSS 및 감정 컬러를 생성하는 만능 빌더
+  function buildFlexibleStatusWindowHtml(rawInnerText) {
+    const now = new Date();
+    const pad = (n) => String(n).padStart(2, '0');
+    const timeStr = `${pad(now.getHours())}:${pad(now.getMinutes())}:${pad(now.getSeconds())}`;
+
+    // [상태창] 바깥 껍데기가 남아있다면 제거
+    let cleaned = String(rawInnerText || '')
+      .replace(/^\[상태창\s*[:：]?/i, '')
+      .replace(/\[\/상태창\]$/i, '')
+      .replace(/\]$/, '')
+      .trim();
+
+    // 줄바꿈(\n) 또는 파이프(|) 기준으로 항목 분리
+    const rawTokens = cleaned
+      ? cleaned.split(/\r?\n|\|/).map(s => s.trim()).filter(Boolean)
+      : [
+          `상태: 온라인 · 정상 가동`,
+          `기분: ${currentEmotion || '기본'}`,
+          `현재 시각: ${timeStr}`,
+          `동기화율: 98%`
+        ];
+
+    let detectedEmo = '';
+    const gridItemsHtml = [];
+    const barItemsHtml = [];
+    const taskItemsHtml = [];
+
+    const emoKeyPattern = /^(?:기분|감정|컨디션|상태|모드|표정|emotion|mood)$/i;
+    const emoValueKeywordPattern = /(기쁨|행복|신남|미소|평온|슬픔|우울|걱정|화남|분노|경계|짜증|생각중|추론|집중|분석|놀람|당황|감지|사랑|신뢰|설렘|호감)/i;
+    const longTaskKeyPattern = /^(?:현재\s*작업|작업|임무|메모|목표|브리핑|요약|한마디|노트|설명|상황|task|note|memo|summary)$/i;
+
+    rawTokens.forEach(token => {
+      // 불릿 기호(-, *, •) 제거
+      const line = token.replace(/^[-*•]\s*/, '').trim();
+      if (!line) return;
+
+      const kvMatch = line.match(/^([^:：=]{1,24}?)\s*[:：=]\s*(.+)$/);
+      if (kvMatch) {
+        const key = kvMatch[1].trim();
+        const val = kvMatch[2].trim();
+
+        // 감정 키워드 감지
+        if (emoKeyPattern.test(key) && emoValueKeywordPattern.test(val)) {
+          detectedEmo = val.match(emoValueKeywordPattern)[1];
+        } else if (!detectedEmo && emoValueKeywordPattern.test(val)) {
+          detectedEmo = val.match(emoValueKeywordPattern)[1];
+        }
+
+        // 퍼센트(%) 수치가 포함된 항목은 자동으로 게이지 바로 렌더링
+        const pctMatch = val.match(/(\d{1,3})\s*%/);
+        if (pctMatch) {
+          const pct = Math.min(100, Math.max(0, parseInt(pctMatch[1], 10)));
+          barItemsHtml.push(`
+            <div class="rx-status-bar-wrap">
+              <div class="rx-status-bar-top">
+                <span>${escapeHtmlPlain(key)}</span>
+                <span style="color:var(--emo-color); font-weight:700;">${escapeHtmlPlain(val)}</span>
+              </div>
+              <div class="rx-status-bar-track">
+                <div class="rx-status-bar-fill" style="width: ${pct}%;"></div>
+              </div>
+            </div>
+          `);
+        } else if (longTaskKeyPattern.test(key) || val.length > 26) {
+          taskItemsHtml.push(`
+            <div class="rx-status-task">
+              <strong style="color:var(--emo-color); flex-shrink:0;">[${escapeHtmlPlain(key)}]</strong>
+              <span>${escapeHtmlPlain(val)}</span>
+            </div>
+          `);
+        } else {
+          gridItemsHtml.push(`
+            <div class="rx-status-item">
+              <span class="rx-status-label">${escapeHtmlPlain(key)}</span>
+              <span class="rx-status-value">${escapeHtmlPlain(val)}</span>
+            </div>
+          `);
+        }
+      } else {
+        // 키:값 형식이 아닌 자유 문장도 절대 누락하지 않고 렌더링
+        if (!detectedEmo && emoValueKeywordPattern.test(line)) {
+          detectedEmo = line.match(emoValueKeywordPattern)[1];
+        }
+        const pctMatch = line.match(/(\d{1,3})\s*%/);
+        if (pctMatch && line.length <= 24) {
+          const pct = Math.min(100, Math.max(0, parseInt(pctMatch[1], 10)));
+          barItemsHtml.push(`
+            <div class="rx-status-bar-wrap">
+              <div class="rx-status-bar-top">
+                <span>${escapeHtmlPlain(line)}</span>
+                <span style="color:var(--emo-color); font-weight:700;">${pct}%</span>
+              </div>
+              <div class="rx-status-bar-track">
+                <div class="rx-status-bar-fill" style="width: ${pct}%;"></div>
+              </div>
+            </div>
+          `);
+        } else {
+          taskItemsHtml.push(`
+            <div class="rx-status-task">
+              <strong style="color:var(--emo-color); flex-shrink:0;">•</strong>
+              <span>${escapeHtmlPlain(line)}</span>
+            </div>
+          `);
+        }
+      }
+    });
+
+    if (detectedEmo) {
+      setEmotion(detectedEmo);
+    }
+
+    const activeEmo = detectedEmo || currentEmotion || '기본';
+    const palette = getEmotionPalette(activeEmo);
+    const inlineVars = `--emo-color: ${palette.color}; --emo-glow: ${palette.glow}; --emo-bg: ${palette.bg};`;
+
+    const hasGridOrBars = gridItemsHtml.length > 0 || barItemsHtml.length > 0;
+    const gridSection = hasGridOrBars
+      ? `<div class="rx-status-grid">${gridItemsHtml.join('')}${barItemsHtml.join('')}</div>`
+      : '';
+
+    return `<div class="rx-status-window" style="${inlineVars}">
+  <div class="rx-status-header">
+    <div class="rx-status-title"><span class="rx-status-dot"></span>MINORI STATUS WINDOW</div>
+    <span class="rx-status-badge">감정: ${escapeHtmlPlain(activeEmo)}</span>
+  </div>
+  ${gridSection}
+  ${taskItemsHtml.join('')}
+</div>`;
   }
 
   // ==========================================
   // 정규식 & 트리거 스크립트 데이터 및 파이프라인 엔진 (초기화)
   // ==========================================
-  let regexScripts = [
+  const DEFAULT_VISUAL_REGEX_SCRIPTS = [
     {
-      id: 'reg_emo',
-      name: '감정 태그 추출기',
-      placement: 'output', // 'input' | 'output' | 'request' | 'display'
-      in: '\\[(기쁨|슬픔|화남|미소|생각중|놀람)\\]',
-      out: '@@emo $1',
-      active: true
-    },
-    {
-      id: 'reg_display_accent',
-      name: '미노리 호출 강조',
+      id: 'reg_status_window',
+      name: '📊 상태창 시각화 ([상태창] 자유 양식 & 감정 컬러 연동)',
       placement: 'display',
-      in: '(미노리)',
-      out: '✨$1',
+      in: '\\[상태창(?:\\s*[:：]\\s*([^\\]]+?))?\\](?:([\\s\\S]*?)\\[\\/상태창\\]|((?:\\r?\\n[^\\[\\n]+)+))?',
+      out: '{{status_window::$1$2$3}}',
+      sample: `[상태창]\n상태: 온라인 · 정상 가동\n기분: 기쁨\n동기화율: 96%\n현재작업: 어떤 항목이나 줄 수를 적든 자유롭게 렌더링됩니다\n[/상태창]`,
       active: true
     }
   ];
+
+  const LEGACY_SAMPLE_REGEX_IDS = new Set([
+    'reg_visual_status_block',
+    'reg_visual_status_inline',
+    'reg_input_status_shortcut',
+    'reg_visual_quest',
+    'reg_visual_gauge',
+    'reg_visual_foldcard',
+    'reg_display_accent',
+    'reg_emo'
+  ]);
+
+  let regexScripts = JSON.parse(JSON.stringify(DEFAULT_VISUAL_REGEX_SCRIPTS));
 
   let triggerScripts = [
     {
       id: 'trig_greeting',
       triggerName: 'Greeting',
-      type: 'manual', // 'manual' | 'on_send' | 'on_receive'
-      actionType: 'insert_message', // 'insert_message' | 'set_emotion' | 'toast_alert' | 'custom_js'
-      actionValue: '주인님, 무엇을 도와드릴까요? 명령을 기다리고 있습니다.',
-      active: true
-    },
-    {
-      id: 'trig_smile',
-      triggerName: 'Smile',
       type: 'manual',
-      actionType: 'set_emotion',
-      actionValue: '기쁨',
+      actionType: 'insert_message',
+      actionValue: '주인님, 무엇을 도와드릴까요? 명령을 기다리고 있습니다.',
       active: true
     }
   ];
 
   try {
     const savedReg = localStorage.getItem('minori_regex_scripts');
-    if (savedReg) regexScripts = JSON.parse(savedReg);
+    if (savedReg) {
+      const parsedReg = JSON.parse(savedReg);
+      if (Array.isArray(parsedReg)) {
+        // 불필요한 샘플 프리셋들은 제거하고 사용자 커스텀 스크립트 + 기본 상태창 스크립트 1개만 유지
+        const cleanedReg = parsedReg.filter(item => item && !LEGACY_SAMPLE_REGEX_IDS.has(item.id));
+        const hasStatusScript = cleanedReg.some(item => item.id === 'reg_status_window');
+        regexScripts = hasStatusScript
+          ? cleanedReg
+          : [JSON.parse(JSON.stringify(DEFAULT_VISUAL_REGEX_SCRIPTS[0])), ...cleanedReg];
+        localStorage.setItem('minori_regex_scripts', JSON.stringify(regexScripts));
+      }
+    }
     const savedTrig = localStorage.getItem('minori_trigger_scripts');
     if (savedTrig) triggerScripts = JSON.parse(savedTrig);
   } catch (e) {
@@ -525,21 +739,8 @@ document.addEventListener('DOMContentLoaded', () => {
   function applyCustomRegex(text, inPattern, outPattern) {
     if (!text || !inPattern) return text;
     try {
-      const regex = new RegExp(inPattern, 'g');
-
-      if (outPattern.trim().startsWith('@@')) {
-        const match = text.match(regex);
-        if (match) {
-          const trimmedOut = outPattern.trim();
-          if (trimmedOut.startsWith('@@emo')) {
-            const emoName = trimmedOut.replace(/^@@emo\s*/, '').trim();
-            const evaluatedEmoName = emoName.replace(/\$1/g, match[1] || '').trim();
-            setEmotion(evaluatedEmoName || '기쁨');
-          }
-          return text;
-        }
-        return text;
-      }
+      const regex = new RegExp(inPattern, 'gim');
+      const rawOut = String(outPattern || '');
 
       return text.replace(regex, (match, ...args) => {
         const namedGroups = (typeof args[args.length - 1] === 'object' && args[args.length - 1] !== null) ? args[args.length - 1] : {};
@@ -547,16 +748,45 @@ document.addEventListener('DOMContentLoaded', () => {
         const offset = (typeof args[args.length - 1] === 'object') ? args[args.length - 3] : args[args.length - 2];
         const captures = args.slice(0, (typeof args[args.length - 1] === 'object') ? args.length - 3 : args.length - 2);
 
-        let res = outPattern;
-        res = res.replace(/\$\(([a-zA-Z0-9_]+)\)/g, (_, name) => (namedGroups[name] !== undefined ? namedGroups[name] : ''));
-        res = res.replace(/\$`/g, fullString.slice(0, offset));
-        res = res.replace(/\$&/g, match);
-        res = res.replace(/\$([0-9]+)/g, (_, num) => {
-          const idx = parseInt(num, 10) - 1;
-          return captures[idx] !== undefined ? captures[idx] : '$' + num;
-        });
-        res = res.replace(/\$\$/g, '$');
-        return res;
+        const interpolateGroups = (templateStr) => {
+          let s = templateStr;
+          s = s.replace(/\$\(([a-zA-Z0-9_]+)\)/g, (_, name) => (namedGroups[name] !== undefined ? namedGroups[name] : ''));
+          s = s.replace(/\$`/g, fullString.slice(0, offset));
+          s = s.replace(/\$&/g, match);
+          s = s.replace(/\$([0-9]+)/g, (_, num) => {
+            const idx = parseInt(num, 10) - 1;
+            return captures[idx] !== undefined ? captures[idx] : '';
+          });
+          s = s.replace(/\$\$/g, '$');
+          return s;
+        };
+
+        let workingOut = rawOut;
+
+        // 만능 자유 양식 상태창 매크로 ({{status_window::...}} 또는 {{status_window}}) 지원
+        if (workingOut.includes('{{status_window')) {
+          const interpolated = interpolateGroups(workingOut);
+          return interpolated.replace(/\{\{status_window(?:::([\s\S]*?))?\}\}/gi, (_, inner) => {
+            const bodyText = (inner !== undefined && inner.trim() !== '') ? inner : match;
+            return buildFlexibleStatusWindowHtml(bodyText);
+          });
+        }
+
+        // 첫 줄 또는 전체가 @@emo 지시어로 시작하는 경우 감정 상태 변경 수행 후 남은 HTML/텍스트 반환
+        if (workingOut.trim().startsWith('@@emo')) {
+          const lines = workingOut.trim().split(/\r?\n/);
+          const emoLine = lines.shift() || '';
+          const emoTarget = interpolateGroups(emoLine.replace(/^@@emo\s*/, '').trim()).trim();
+          if (emoTarget) {
+            setEmotion(emoTarget);
+          }
+          if (lines.length === 0) {
+            return match;
+          }
+          workingOut = lines.join('\n');
+        }
+
+        return interpolateGroups(workingOut);
       });
     } catch (err) {
       console.warn('정규식 처리 중 오류:', err);
@@ -582,8 +812,9 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   // ==========================================
-  // 4. 채팅 세션 데이터 저장소 (멀티 세션 메시지 보존)
+  // 4. 채팅 세션 데이터 저장소 (멀티 세션 메시지 보존 & 백엔드 파일 영구 동기화)
   // ==========================================
+  let isResettingAllData = false;
   let chatSessionsData = {};
   try {
     const savedSessions = localStorage.getItem('minori_chat_sessions_data');
@@ -596,10 +827,53 @@ document.addEventListener('DOMContentLoaded', () => {
   }
   const chatViewport = document.getElementById('chatViewport');
 
+  let sessionSyncTimer = null;
+  function syncSessionsToBackend(immediate = false) {
+    if (isResettingAllData) return;
+    const doSync = () => {
+      if (isResettingAllData) return;
+      let treeData = null;
+      try {
+        const rawTree = localStorage.getItem('minori_session_tree');
+        if (rawTree) treeData = JSON.parse(rawTree);
+      } catch (e) {}
+      fetch('/api/sessions', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          session_tree: treeData,
+          sessions_data: chatSessionsData
+        })
+      }).catch(() => {});
+    };
+
+    if (immediate) {
+      if (sessionSyncTimer) clearTimeout(sessionSyncTimer);
+      doSync();
+    } else {
+      if (sessionSyncTimer) clearTimeout(sessionSyncTimer);
+      sessionSyncTimer = setTimeout(doSync, 250);
+    }
+  }
+
   function saveCurrentChatMessages(chatId) {
-    if (!chatId) return;
+    if (!chatId || isResettingAllData) return;
     const messages = [];
     chatViewport.querySelectorAll('.chat-message').forEach(msgEl => {
+      if (
+        msgEl.dataset.isGuide === 'true' ||
+        msgEl.dataset.msgId === 'msg_guide' ||
+        msgEl.querySelector('.guide-message-body')
+      ) {
+        messages.push({
+          role: 'assistant',
+          isGuide: true,
+          thought: null,
+          content: '미노리(MINORI) 시작 가이드',
+          rawContent: '미노리(MINORI) 시작 가이드'
+        });
+        return;
+      }
       const isUser = msgEl.classList.contains('user-message');
       const thoughtEl = msgEl.querySelector('.thought-content');
       const textSpan = msgEl.querySelector('.message-text') || msgEl.querySelector('.message-body');
@@ -615,14 +889,16 @@ document.addEventListener('DOMContentLoaded', () => {
     try {
       localStorage.setItem('minori_chat_sessions_data', JSON.stringify(chatSessionsData));
     } catch (e) {
-      console.warn('대화 메시지 localStorage 저장 오류:', e);
+      console.warn('대화 메시지 localStorage 용량 초과 (백엔드 디스크 파일에 저장됩니다):', e);
     }
+    syncSessionsToBackend();
   }
 
   function renderGuideMessage() {
     const msgEl = document.createElement('div');
     msgEl.className = 'chat-message assistant-message';
     msgEl.dataset.role = 'assistant';
+    msgEl.dataset.isGuide = 'true';
     msgEl.dataset.rawContent = '미노리(MINORI) 시작 가이드';
     msgEl.innerHTML = `
       <div class="message-header-bar">
@@ -708,7 +984,15 @@ document.addEventListener('DOMContentLoaded', () => {
     const messages = chatSessionsData[chatId];
     if (messages && messages.length > 0) {
       messages.forEach(msg => {
-        renderMessageToViewport(msg.role, msg.content, msg.thought, msg.rawContent);
+        if (
+          msg.isGuide ||
+          msg.content === '미노리(MINORI) 시작 가이드' ||
+          msg.content === '미노리 시작 가이드'
+        ) {
+          renderGuideMessage();
+        } else {
+          renderMessageToViewport(msg.role, msg.content, msg.thought, msg.rawContent);
+        }
       });
     } else {
       renderGuideMessage();
@@ -752,7 +1036,29 @@ document.addEventListener('DOMContentLoaded', () => {
       `;
     }
 
-    let displayContent = applyRegexPipeline(content, 'display');
+    // 프론트엔드 최종 출력 레이어에서도 [현재 시간] 등 정적 플레이스홀더를 초 단위 실제 시각으로 보장 치환 & 감정 태그 감지
+    function substituteRealtimeAndEmotion(str) {
+      if (!str) return '';
+      let out = String(str);
+      const now = new Date();
+      const pad = (n) => String(n).padStart(2, '0');
+      const daysKr = ['일요일', '월요일', '화요일', '수요일', '목요일', '금요일', '토요일'];
+      const fullTimeStr = `${now.getFullYear()}-${pad(now.getMonth() + 1)}-${pad(now.getDate())} ${pad(now.getHours())}:${pad(now.getMinutes())}:${pad(now.getSeconds())} (${daysKr[now.getDay()]})`;
+
+      out = out.replace(
+        /(\[\s*(?:현재\s*시간|현재\s*시각|지금\s*시간|지금\s*시각|현재\s*날짜\s*및\s*시간|시간\s*데이터)\s*\]|\{\{\s*(?:current_time|time|now)\s*\}\}|logged_get_current_time\s*\(\s*\)|get_current_time\s*\(\s*\))/gi,
+        fullTimeStr
+      );
+
+      const emoTagMatch = out.match(/\[(기쁨|행복|신남|미소|평온|슬픔|우울|걱정|화남|분노|경계|생각중|추론|집중|놀람|당황|사랑|신뢰|설렘)\]/i);
+      if (emoTagMatch && emoTagMatch[1]) {
+        setEmotion(emoTagMatch[1]);
+      }
+      return out;
+    }
+
+    let displayContent = substituteRealtimeAndEmotion(content);
+    displayContent = applyRegexPipeline(displayContent, 'display');
     displayContent = parseMarkdown(parseTriggerButtons(displayContent));
 
     const isUser = role === 'user';
@@ -861,7 +1167,7 @@ document.addEventListener('DOMContentLoaded', () => {
       const editBox = document.createElement('div');
       editBox.className = 'inline-edit-box';
       editBox.innerHTML = `
-        <textarea class="inline-edit-textarea" rows="3">${escapeHtml(currentRaw)}</textarea>
+        <textarea class="inline-edit-textarea" rows="4">${escapeHtmlPlain(currentRaw)}</textarea>
         <div class="inline-edit-actions">
           <button type="button" class="btn-solid-secondary btn-cancel-edit" style="padding: 4px 10px; font-size: 11px;">취소</button>
           <button type="button" class="btn-solid-primary btn-save-edit" style="padding: 4px 10px; font-size: 11px;">저장</button>
@@ -951,7 +1257,12 @@ document.addEventListener('DOMContentLoaded', () => {
 
       try {
         const ctx = getActiveChatContext();
-        const activeModulesRules = typeof getActiveModulePrompts === 'function' ? getActiveModulePrompts() : '';
+        let activeModulesRules = typeof getActiveModulePrompts === 'function' ? getActiveModulePrompts() : '';
+        const autoStatusOn = (typeof chkAutoStatusWindow !== 'undefined' && chkAutoStatusWindow && chkAutoStatusWindow.checked) || localStorage.getItem('minori_auto_status_window') === 'true';
+        if (autoStatusOn || userPrompt.includes('상태창')) {
+          activeModulesRules += `\n\n[상태창 출력 지침]\n답변의 가장 마지막 줄에 반드시 [상태창]...[/상태창] 블록을 사용하여 현재 미노리의 상태, 기분(기쁨/미소/생각중/놀람/슬픔/화남/사랑 중 택1), 동기화율(%), 현재작업을 자유롭게 작성하세요.`;
+        }
+        const priorMessages = (chatSessionsData[ctx.chatId] || []).slice(0, -2).slice(-12);
 
         const response = await fetch('/api/chat', {
           method: 'POST',
@@ -959,6 +1270,7 @@ document.addEventListener('DOMContentLoaded', () => {
           body: JSON.stringify({
             message: userPrompt,
             chat_id: ctx.chatId,
+            chat_history: priorMessages,
             system_rules: activeModulesRules
           })
         });
@@ -1247,6 +1559,7 @@ document.addEventListener('DOMContentLoaded', () => {
     } catch (e) {
       console.warn('세션 트리 localStorage 저장 실패:', e);
     }
+    syncSessionsToBackend();
   }
 
   // 새로고침 시 localStorage에서 세션 트리 및 이전 대화 상태를 복원
@@ -1576,6 +1889,53 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
+  // 대화 제목 및 본문 실시간 검색 필터링 (#chatSearchInput)
+  const chatSearchInput = document.getElementById('chatSearchInput');
+  if (chatSearchInput && sessionTree) {
+    chatSearchInput.addEventListener('input', () => {
+      const q = (chatSearchInput.value || '').trim().toLowerCase();
+      const allItems = sessionTree.querySelectorAll('.session-item');
+      allItems.forEach(item => {
+        if (!q) {
+          item.style.display = '';
+          return;
+        }
+        const chatId = item.dataset.chatId;
+        const nameEl = item.querySelector('.session-name');
+        const titleText = (nameEl ? nameEl.textContent : '').toLowerCase();
+        const messages = Array.isArray(chatSessionsData[chatId]) ? chatSessionsData[chatId] : [];
+        const bodyMatch = messages.some(m => String(m.text || '').toLowerCase().includes(q));
+        if (titleText.includes(q) || bodyMatch) {
+          item.style.display = '';
+        } else {
+          item.style.display = 'none';
+        }
+      });
+
+      // 노트 그룹 내 매칭되는 대화가 있으면 노트를 자동으로 펼치고 표시
+      const noteGroups = sessionTree.querySelectorAll('.note-group');
+      noteGroups.forEach(note => {
+        if (!q) {
+          note.style.display = '';
+          return;
+        }
+        const noteTitleEl = note.querySelector('.note-title');
+        const noteTitle = (noteTitleEl ? noteTitleEl.textContent : '').toLowerCase();
+        const visibleChats = Array.from(note.querySelectorAll('.session-item')).filter(el => el.style.display !== 'none');
+        if (noteTitle.includes(q)) {
+          note.style.display = '';
+          note.querySelectorAll('.session-item').forEach(el => { el.style.display = ''; });
+          note.classList.remove('collapsed');
+        } else if (visibleChats.length > 0) {
+          note.style.display = '';
+          note.classList.remove('collapsed');
+        } else {
+          note.style.display = 'none';
+        }
+      });
+    });
+  }
+
   sessionTree.addEventListener('click', (e) => {
     const noteHeaderLeft = e.target.closest('.note-header-left');
     if (noteHeaderLeft) {
@@ -1669,13 +2029,15 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // 세션 트리 복원 및 초기 활성 대화 로드는 전체 UI 컴포넌트(모듈, 로어북, 플러그인, API) 등록 완료 후 최하단에서 일괄 실행합니다.
 
-  // 브라우저 새로고침(F5) 또는 탭 닫기 전 최신 상태 플러시
+  // 브라우저 새로고침(F5) 또는 탭 닫기 전 최신 상태 플러시 (초기화 중일 때는 재저장 차단)
   window.addEventListener('beforeunload', () => {
+    if (isResettingAllData) return;
     const currentActive = sessionTree ? sessionTree.querySelector('.session-item.active') : null;
     if (currentActive) {
       saveCurrentChatMessages(currentActive.dataset.chatId);
     }
     saveSessionTreeToStorage();
+    syncSessionsToBackend(true);
     if (typeof saveCurrentLorebookDOMToStore === 'function') {
       saveCurrentLorebookDOMToStore();
     }
@@ -2587,8 +2949,10 @@ document.addEventListener('DOMContentLoaded', () => {
   function cleanTextForSpeech(text) {
     if (!text) return '';
     return text
-      // 1. White Thought 및 시스템/HTML 태그 제거
+      // 1. White Thought, 상태창 블록 및 시스템/HTML 태그 제거
+      .replace(/\[상태창\][\s\S]*?\[\/상태창\]/gi, '')
       .replace(/\[White Thought[\s\S]*?\]/g, '')
+      .replace(/<style\b[^>]*>[\s\S]*?<\/style>/gi, '')
       .replace(/<[^>]*>?/gm, '')
       // 2. 코드 블록(```...```)을 자연스러운 음성 안내로 치환
       .replace(/```[\s\S]*?```/g, ' 코드 내용은 화면을 확인해 주세요. ')
@@ -2596,10 +2960,10 @@ document.addEventListener('DOMContentLoaded', () => {
       .replace(/`([^`]+)`/g, '$1')
       // 4. 마크다운 링크: [텍스트](url) -> 텍스트만 음성으로 읽기 (대괄호 제거 전 선행)
       .replace(/\[([^\]\n]+)\]\([^)\n]+\)/g, '$1')
-      // 5. 소괄호/대괄호/중괄호 및 별표 행동/지문 제거 (줄바꿈을 건너뛰지 않고 행 단위 안전 매칭)
+      // 5. 소괄호/중괄호 및 별표 행동/지문 제거, 대괄호는 감정/상태창/첨부 태그만 제거하여 [14:35:22] 등 시간 데이터가 삭제되지 않도록 보호
       .replace(/\([^)\n]*\)/g, '')
       .replace(/（[^）\n]*）/g, '')
-      .replace(/\[[^\]\n]*\]/g, '')
+      .replace(/\[(?:기쁨|행복|신남|미소|평온|슬픔|우울|화남|분노|경계|생각중|추론|놀람|당황|사랑|신뢰|기본|대기|상태창[^\]]*|\/상태창|첨부[^\]]*)\]/gi, '')
       .replace(/\{[^}\n]*\}/g, '')
       .replace(/\*[^*\n]+\*/g, '')
       // 6. 단독 URL 링크 축약
@@ -2815,6 +3179,91 @@ document.addEventListener('DOMContentLoaded', () => {
     display: '디스플레이 수정'
   };
 
+  const regexLiveTestInput = document.getElementById('regexLiveTestInput');
+  const regexLivePreviewOutput = document.getElementById('regexLivePreviewOutput');
+  const chkAutoStatusWindow = document.getElementById('chkAutoStatusWindow');
+  const btnRestoreDefaultVisualRegex = document.getElementById('btnRestoreDefaultVisualRegex');
+  const btnSendRegexPreviewToChat = document.getElementById('btnSendRegexPreviewToChat');
+
+  // 자동 상태창 출력 스위치 로컬 스토리지 연동
+  if (chkAutoStatusWindow) {
+    chkAutoStatusWindow.checked = localStorage.getItem('minori_auto_status_window') === 'true';
+    chkAutoStatusWindow.addEventListener('change', () => {
+      localStorage.setItem('minori_auto_status_window', String(chkAutoStatusWindow.checked));
+      showToast(
+        chkAutoStatusWindow.checked
+          ? '이제 미노리가 답변할 때마다 하단에 [상태창]을 자동으로 출력합니다.'
+          : '미노리 답변 하단 [상태창] 자동 출력이 해제되었습니다.',
+        'info'
+      );
+    });
+  }
+
+  function updateRegexLivePreview() {
+    if (!regexLiveTestInput || !regexLivePreviewOutput) return;
+    const rawSample = regexLiveTestInput.value || '';
+    // 입력 -> 리퀘스트 -> 출력 -> 디스플레이 순으로 활성화된 정규식을 시뮬레이션하여 실제 화면과 동일하게 렌더링
+    let stepText = applyRegexPipeline(rawSample, 'input');
+    stepText = applyRegexPipeline(stepText, 'output');
+    stepText = applyRegexPipeline(stepText, 'display');
+    const renderedHtml = parseMarkdown(parseTriggerButtons(stepText));
+    regexLivePreviewOutput.innerHTML = renderedHtml || '<span style="color:var(--text-muted); font-size:11px;">변환 결과가 여기에 표시됩니다.</span>';
+  }
+
+  if (regexLiveTestInput) {
+    regexLiveTestInput.addEventListener('input', updateRegexLivePreview);
+  }
+
+  document.querySelectorAll('.regex-preset-chip[data-sample]').forEach(chip => {
+    chip.addEventListener('click', () => {
+      if (regexLiveTestInput) {
+        regexLiveTestInput.value = chip.getAttribute('data-sample') || '';
+        updateRegexLivePreview();
+      }
+    });
+  });
+
+  if (btnRestoreDefaultVisualRegex) {
+    btnRestoreDefaultVisualRegex.addEventListener('click', () => {
+      const existingIds = new Set(regexScripts.map(s => s && s.id));
+      let addedCount = 0;
+      DEFAULT_VISUAL_REGEX_SCRIPTS.forEach(def => {
+        const idx = regexScripts.findIndex(s => s && s.id === def.id);
+        if (idx >= 0) {
+          regexScripts[idx] = JSON.parse(JSON.stringify(def));
+        } else {
+          regexScripts.unshift(JSON.parse(JSON.stringify(def)));
+          addedCount++;
+        }
+      });
+      saveScriptsToStorage();
+      renderScriptView();
+      updateRegexLivePreview();
+      showToast('상태창·알림창·게이지·브리핑카드 기본 시각 CSS 정규식을 복원했습니다.', 'success');
+    });
+  }
+
+  if (btnSendRegexPreviewToChat) {
+    btnSendRegexPreviewToChat.addEventListener('click', () => {
+      const rawSample = regexLiveTestInput ? regexLiveTestInput.value.trim() : '';
+      if (!rawSample) {
+        showToast('미리보기 입력창에 테스트할 텍스트를 먼저 입력해 주세요.', 'warn');
+        return;
+      }
+      const ctx = getActiveChatContext();
+      const processedOut = applyRegexPipeline(rawSample, 'output');
+      renderMessageToViewport(
+        'assistant',
+        `주인님, 요청하신 **정규식 CSS 시각적 렌더링** 미리보기 결과입니다.\n\n${processedOut}`,
+        '[정규식 CSS 시각적 렌더링 테스트]\n- 원본 텍스트가 정규식(IN -> OUT)을 거쳐 HTML/CSS 위젯으로 변환되었습니다.'
+      );
+      saveCurrentChatMessages(ctx.chatId);
+      showChatView();
+      chatViewport.scrollTop = chatViewport.scrollHeight;
+      showToast('채팅창에 시각적 CSS 위젯이 렌더링되었습니다!', 'success');
+    });
+  }
+
   function renderScriptView() {
     // 1. 정규식 카드 목록 렌더링
     if (regexScriptList) {
@@ -2833,6 +3282,9 @@ document.addEventListener('DOMContentLoaded', () => {
               <span class="script-title">${escapeHtml(script.name)}</span>
             </div>
             <div class="item-actions">
+              <button class="icon-btn action-preview-reg" title="상단 미리보기 창에서 이 정규식 테스트">
+                <svg class="icon-svg-sm" viewBox="0 0 24 24"><path d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5zM12 17c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5zm0-8c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3z"/></svg>
+              </button>
               <button class="icon-btn link-toggle-btn ${script.active ? 'active' : ''}" title="활성/비활성">
                 <svg class="icon-svg-sm" viewBox="0 0 24 24"><path d="M3.9 12c0-1.71 1.39-3.1 3.1-3.1h4V7H7c-2.76 0-5 2.24-5 5s2.24 5 5 5h4v-1.9H7c-1.71 0-3.1-1.39-3.1-3.1zM8 13h8v-2H8v2zm9-6h-4v1.9h4c1.71 0 3.1 1.39 3.1 3.1s-1.39 3.1-3.1 3.1h-4V17h4c2.76 0 5-2.24 5-5s-2.24-5-5-5z"/></svg>
               </button>
@@ -2844,7 +3296,7 @@ document.addEventListener('DOMContentLoaded', () => {
           <div class="script-collapsible-body">
             <div class="field-group">
               <label class="field-label-sm">이름</label>
-              <input type="text" class="dark-input reg-name-input" value="${escapeHtml(script.name)}">
+              <input type="text" class="dark-input reg-name-input" value="${escapeHtmlPlain(script.name)}">
             </div>
             <div class="field-group">
               <label class="field-label-sm">적용 위치 (4가지 옵션)</label>
@@ -2852,16 +3304,16 @@ document.addEventListener('DOMContentLoaded', () => {
                 <option value="input" ${script.placement === 'input' ? 'selected' : ''}>입력문 수정 (유저의 입력 수정)</option>
                 <option value="output" ${script.placement === 'output' ? 'selected' : ''}>출력문 수정 (캐릭터의 출력 수정)</option>
                 <option value="request" ${script.placement === 'request' ? 'selected' : ''}>리퀘스트 데이터 수정 (리퀘스트 시 데이터 수정)</option>
-                <option value="display" ${script.placement === 'display' ? 'selected' : ''}>디스플레이 수정 (실제 데이터 유지, 화면 표시만 수정)</option>
+                <option value="display" ${script.placement === 'display' ? 'selected' : ''}>디스플레이 수정 (원본 텍스트 유지, 화면만 HTML/CSS로 렌더링)</option>
               </select>
             </div>
             <div class="field-group">
-              <label class="field-label-sm">IN (슬래시/플래그 없는 정규식)</label>
-              <input type="text" class="dark-input reg-in-input" value="${escapeHtml(script.in)}" placeholder="예: (미노리|비서)">
+              <label class="field-label-sm">IN (감지할 텍스트 정규식 패턴 - $1, $2 등 괄호로 그룹 추출)</label>
+              <input type="text" class="dark-input reg-in-input" style="font-family: monospace;" value="${escapeHtmlPlain(script.in)}" placeholder="예: \\[상태창:\\s*(.*?)\\s*\\|\\s*(.*?)\\]">
             </div>
             <div class="field-group">
-              <label class="field-label-sm">OUT ($$, $&, $1, @@emo 지원)</label>
-              <input type="text" class="dark-input reg-out-input" value="${escapeHtml(script.out)}" placeholder="예: $1 또는 @@emo 기쁨">
+              <label class="field-label-sm">OUT (변환될 HTML/CSS 코드 또는 텍스트 - $1, $2, $&, @@emo 지원)</label>
+              <textarea class="dark-textarea reg-out-input" rows="6" style="font-family: monospace; font-size: 11.5px; line-height: 1.45;" placeholder="예: <div class=&quot;rx-status-window&quot;>상태: $1 / 기분: $2</div>">${escapeHtmlPlain(script.out)}</textarea>
             </div>
           </div>
         `;
@@ -2870,6 +3322,19 @@ document.addEventListener('DOMContentLoaded', () => {
         const header = card.querySelector('.script-header-left');
         header.addEventListener('click', () => card.classList.toggle('collapsed'));
 
+        const previewBtn = card.querySelector('.action-preview-reg');
+        if (previewBtn) {
+          previewBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            if (regexLiveTestInput) {
+              const defaultMatch = DEFAULT_VISUAL_REGEX_SCRIPTS.find(d => d.id === script.id);
+              regexLiveTestInput.value = script.sample || (defaultMatch && defaultMatch.sample) || regexLiveTestInput.value;
+              updateRegexLivePreview();
+              showToast(`'${script.name}' 예시가 상단 미리보기에 로드되었습니다.`, 'info');
+            }
+          });
+        }
+
         const linkBtn = card.querySelector('.link-toggle-btn');
         linkBtn.addEventListener('click', (e) => {
           e.stopPropagation();
@@ -2877,6 +3342,7 @@ document.addEventListener('DOMContentLoaded', () => {
           linkBtn.classList.toggle('active', script.active);
           card.dataset.active = script.active ? 'true' : 'false';
           saveScriptsToStorage();
+          updateRegexLivePreview();
         });
 
         const delBtn = card.querySelector('.action-delete-reg');
@@ -2886,6 +3352,7 @@ document.addEventListener('DOMContentLoaded', () => {
             regexScripts.splice(idx, 1);
             saveScriptsToStorage();
             renderScriptView();
+            updateRegexLivePreview();
             showToast(`'${script.name}' 정규식이 삭제되었습니다.`, 'info');
           });
         });
@@ -2902,23 +3369,27 @@ document.addEventListener('DOMContentLoaded', () => {
           script.placement = placementSelect.value;
           card.querySelector('.badge-placement').textContent = placementLabels[script.placement];
           saveScriptsToStorage();
+          updateRegexLivePreview();
         });
 
         const inInput = card.querySelector('.reg-in-input');
         inInput.addEventListener('input', () => {
           script.in = inInput.value;
           saveScriptsToStorage();
+          updateRegexLivePreview();
         });
 
         const outInput = card.querySelector('.reg-out-input');
         outInput.addEventListener('input', () => {
           script.out = outInput.value;
           saveScriptsToStorage();
+          updateRegexLivePreview();
         });
 
         regexScriptList.appendChild(card);
       });
     }
+    updateRegexLivePreview();
 
     // 2. 트리거 카드 목록 렌더링
     if (triggerScriptList) {
@@ -3121,22 +3592,60 @@ document.addEventListener('DOMContentLoaded', () => {
   renderScriptView();
 
   // ==========================================
-  // 9. 작업 공간 경로 저장 상태
+  // 9. 작업 공간 경로 저장 상태 (백엔드 settings.json 실시간 동기화)
   // ==========================================
   const workspacePathInput = document.getElementById('workspacePathInput');
   const workspaceStatusMsg = document.getElementById('workspaceStatusMsg');
   const btnSaveWorkspace = document.getElementById('btnSaveWorkspace');
 
+  async function saveWorkspacePathToBackend(path) {
+    const cleanPath = (path || '').trim();
+    const isValid = cleanPath.length > 0;
+    if (workspaceStatusMsg) {
+      workspaceStatusMsg.textContent = isValid ? '경로가 적용되었습니다.' : '경로를 입력해 주세요.';
+      workspaceStatusMsg.classList.toggle('invalid', !isValid);
+    }
+    if (workspacePathInput) {
+      workspacePathInput.setAttribute('aria-invalid', String(!isValid));
+    }
+    if (!isValid) return;
+
+    localStorage.setItem('minoriWorkspacePath', cleanPath);
+    try {
+      const res = await fetch('/api/settings', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          workspace_dir: cleanPath,
+          allowed_workspaces: [
+            {
+              id: 'ws_main',
+              alias: '기본 작업 폴더',
+              path: cleanPath,
+              read_only: false,
+              enabled: true
+            }
+          ]
+        })
+      });
+      if (res.ok) {
+        showToast(`작업 공간 경로가 '${cleanPath}'로 변경 및 적용되었습니다.`, 'success');
+      } else {
+        showToast('작업 공간 경로 백엔드 반영에 실패했습니다.', 'error');
+      }
+    } catch (err) {
+      showToast('작업 공간 경로가 로컬에 저장되었습니다.', 'info');
+    }
+  }
+
   if (btnSaveWorkspace && workspacePathInput) {
     btnSaveWorkspace.addEventListener('click', () => {
-      const path = workspacePathInput.value.trim();
-      const isValid = path.length > 0;
-      workspaceStatusMsg.textContent = isValid ? '경로가 유효합니다.' : '경로를 입력해 주세요.';
-      workspaceStatusMsg.classList.toggle('invalid', !isValid);
-      workspacePathInput.setAttribute('aria-invalid', String(!isValid));
-      if (isValid) {
-        localStorage.setItem('minoriWorkspacePath', path);
-        showToast('작업 공간 경로가 저장되었습니다.', 'success');
+      saveWorkspacePathToBackend(workspacePathInput.value);
+    });
+    workspacePathInput.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') {
+        e.preventDefault();
+        saveWorkspacePathToBackend(workspacePathInput.value);
       }
     });
 
@@ -3144,11 +3653,48 @@ document.addEventListener('DOMContentLoaded', () => {
     if (savedWorkspacePath) workspacePathInput.value = savedWorkspacePath;
   }
 
-  // 전체 데이터 초기화 버튼
+  // 네이티브 윈도우 폴더 탐색기 열기 버튼 (#btnBrowseWorkspace)
+  const btnBrowseWorkspace = document.getElementById('btnBrowseWorkspace');
+  if (btnBrowseWorkspace && workspacePathInput) {
+    btnBrowseWorkspace.addEventListener('click', async () => {
+      const originalHtml = btnBrowseWorkspace.innerHTML;
+      btnBrowseWorkspace.disabled = true;
+      try {
+        const res = await fetch('/api/browse-folder', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ current_path: workspacePathInput.value || '' })
+        });
+        const data = await res.json();
+        if (res.ok && data.status === 'success' && data.path) {
+          workspacePathInput.value = data.path;
+          await saveWorkspacePathToBackend(data.path);
+        } else if (data.status === 'cancelled') {
+          showToast('폴더 선택이 취소되었습니다.', 'info');
+        } else {
+          showToast(data.message || '폴더 선택 창을 열지 못했습니다.', 'error');
+        }
+      } catch (err) {
+        showToast('폴더 선택 창 호출 중 오류가 발생했습니다.', 'error');
+      } finally {
+        btnBrowseWorkspace.disabled = false;
+        btnBrowseWorkspace.innerHTML = originalHtml;
+      }
+    });
+  }
+
+  // 전체 데이터 초기화 버튼 (시작 가이드만 유지, API 키 삭제, 모델 미설정, 하이퍼 메모리 비움)
   const btnClearAllData = document.getElementById('btnClearAllData');
   if (btnClearAllData) {
     btnClearAllData.addEventListener('click', () => {
-      showModalConfirm('전체 데이터 초기화', '주의: 모든 대화 및 세션, 로어북, 설정을 초기값으로 초기화하시겠습니까? 되돌릴 수 없습니다.', () => {
+      showModalConfirm('전체 데이터 초기화', '주의: 모든 대화 내역, API 키, 기본 모델 설정, 하이퍼 메모리를 모두 비우고 초기 상태(시작 가이드만 유지)로 되돌리시겠습니까?', async () => {
+        isResettingAllData = true;
+        if (sessionSyncTimer) clearTimeout(sessionSyncTimer);
+        try {
+          await fetch('/api/reset-all', { method: 'POST' });
+        } catch (err) {
+          console.warn('백엔드 초기화 호출 실패:', err);
+        }
         localStorage.clear();
         location.reload();
       });
@@ -3390,7 +3936,43 @@ document.addEventListener('DOMContentLoaded', () => {
   setInterval(syncRemindersFromBackend, 5000);
   setTimeout(syncRemindersFromBackend, 800);
 
+  let activeChatAbortController = null;
+  const originalSendBtnHtml = btnSend ? btnSend.innerHTML : '전송';
+
+  function setSendButtonGeneratingState(isGenerating) {
+    if (!btnSend) return;
+    if (isGenerating) {
+      btnSend.classList.add('generating');
+      btnSend.title = '답변 생성 즉시 중지 (Esc)';
+      btnSend.innerHTML = `
+        <svg viewBox="0 0 24 24" width="14" height="14" fill="currentColor" style="margin-right:4px;">
+          <rect x="5" y="5" width="14" height="14" rx="2"></rect>
+        </svg>
+        중지
+      `;
+    } else {
+      btnSend.classList.remove('generating');
+      btnSend.title = '메시지 전송 (Enter)';
+      btnSend.innerHTML = originalSendBtnHtml;
+    }
+  }
+
+  function stopActiveGeneration() {
+    if (activeChatAbortController) {
+      activeChatAbortController.abort();
+      activeChatAbortController = null;
+      return true;
+    }
+    return false;
+  }
+
   function sendMessage() {
+    // 이미 답변 생성 중일 때 전송(중지) 버튼을 누르면 즉시 생성을 중단
+    if (activeChatAbortController) {
+      stopActiveGeneration();
+      return;
+    }
+
     let rawText = chatInput.value.trim();
     if (!rawText && pendingAttachments.length === 0) return;
     if (!rawText && pendingAttachments.length > 0) {
@@ -3482,16 +4064,29 @@ document.addEventListener('DOMContentLoaded', () => {
     const cyberCore = document.getElementById('cyberCore');
     if (cyberCore) cyberCore.classList.add('thinking');
 
+    const abortController = new AbortController();
+    activeChatAbortController = abortController;
+    setSendButtonGeneratingState(true);
+
     (async () => {
       try {
+        const priorMessages = (chatSessionsData[activeChatId] || []).slice(0, -1).slice(-12);
+        let activeRules = typeof getActiveModulePrompts === 'function' ? getActiveModulePrompts() : '';
+        const autoStatusOn = (chkAutoStatusWindow && chkAutoStatusWindow.checked) || localStorage.getItem('minori_auto_status_window') === 'true';
+        if (autoStatusOn || requestPayloadText.includes('[상태창]') || requestPayloadText.includes('상태창')) {
+          activeRules += `\n\n[상태창 출력 지침]\n답변의 가장 마지막 줄에 반드시 아래 형식 그대로 현재 미노리의 상태를 작성하세요 (정규식 엔진이 이를 시각적 CSS 상태창으로 변환합니다):\n[상태창]\n상태: 온라인 · 정상 가동\n기분: (기쁨/미소/생각중/놀람/슬픔 중 택1)\n동기화율: (90~100 사이 숫자)%\n현재작업: (현재 수행한 작업 한 줄 요약)\n[/상태창]`;
+        }
+
         const response = await fetch('/api/chat', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
+          signal: abortController.signal,
           body: JSON.stringify({
             message: requestPayloadText,
             chat_id: activeChatId,
+            chat_history: priorMessages,
             lorebook_context: lorebookReport,
-            system_rules: typeof getActiveModulePrompts === 'function' ? getActiveModulePrompts() : '',
+            system_rules: activeRules,
             attachments: currentAttachments.length > 0 ? currentAttachments : undefined
           })
         });
@@ -3525,14 +4120,27 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
       } catch (err) {
-        console.error('에이전트 통신 오류:', err);
-        const errorReply = `미노리 백엔드 연결 실패\n\n백엔드 서버(FastAPI)가 실행 중인지 확인해 주세요.\n- 오류 내용: ${err.message}\n- 사이드바의 [설정] -> [고급 설정]에서 API 키가 올바르게 저장되었는지 확인해 주세요.`;
-        const errorThought = `[시스템 통신 오류]\n서버 주소: /api/chat\n오류: ${err.message}\n\nFastAPI 백엔드가 실행 중인지 확인하세요. (예: python -m uvicorn backend.app:app --reload --port 8000)`;
-        
-        renderMessageToViewport('assistant', errorReply, errorThought);
-        saveCurrentChatMessages(activeChatId);
-        chatViewport.scrollTop = chatViewport.scrollHeight;
+        if (err && err.name === 'AbortError') {
+          const cancelReply = '⏹️ *주인님의 요청으로 답변 생성이 즉시 중지되었습니다.*';
+          const cancelThought = `[생성 중지됨]\n사용자가 [■ 중지] 버튼을 눌러 요청을 중단했습니다.\n${lorebookReport}`;
+          renderMessageToViewport('assistant', cancelReply, cancelThought);
+          saveCurrentChatMessages(activeChatId);
+          chatViewport.scrollTop = chatViewport.scrollHeight;
+          showToast('답변 생성을 중지했습니다.', 'info');
+        } else {
+          console.error('에이전트 통신 오류:', err);
+          const errorReply = `미노리 백엔드 연결 실패\n\n백엔드 서버(FastAPI)가 실행 중인지 확인해 주세요.\n- 오류 내용: ${err.message}\n- 사이드바의 [설정] -> [고급 설정]에서 API 키가 올바르게 저장되었는지 확인해 주세요.`;
+          const errorThought = `[시스템 통신 오류]\n서버 주소: /api/chat\n오류: ${err.message}\n\nFastAPI 백엔드가 실행 중인지 확인하세요. (예: python -m uvicorn backend.app:app --reload --port 8000)`;
+          
+          renderMessageToViewport('assistant', errorReply, errorThought);
+          saveCurrentChatMessages(activeChatId);
+          chatViewport.scrollTop = chatViewport.scrollHeight;
+        }
       } finally {
+        if (activeChatAbortController === abortController) {
+          activeChatAbortController = null;
+        }
+        setSendButtonGeneratingState(false);
         if (statusIndicator) statusIndicator.textContent = '온라인 · 대기 중';
         if (cyberCore) cyberCore.classList.remove('thinking');
       }
@@ -3545,6 +4153,11 @@ document.addEventListener('DOMContentLoaded', () => {
   if (btnSend && chatInput) {
     btnSend.addEventListener('click', sendMessage);
     chatInput.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape' && activeChatAbortController) {
+        e.preventDefault();
+        stopActiveGeneration();
+        return;
+      }
       if (e.key === 'Enter' && !e.shiftKey) {
         e.preventDefault();
         sendMessage();
@@ -3655,12 +4268,36 @@ document.addEventListener('DOMContentLoaded', () => {
   }
   loadCustomPluginsStatus();
 
+  const activeModelStatusTag = document.getElementById('activeModelStatusTag');
+
+  function updateModelBadgeState(modelName) {
+    const clean = (modelName || '').trim();
+    if (activeModelBadge) {
+      activeModelBadge.textContent = clean || '미설정 (모델을 선택하세요)';
+    }
+    if (activeModelStatusTag) {
+      if (clean) {
+        activeModelStatusTag.textContent = 'ACTIVE';
+        activeModelStatusTag.style.background = 'rgba(16, 185, 129, 0.2)';
+        activeModelStatusTag.style.color = '#10b981';
+        activeModelStatusTag.style.borderColor = '#10b981';
+      } else {
+        activeModelStatusTag.textContent = 'UNSET';
+        activeModelStatusTag.style.background = 'rgba(148, 163, 184, 0.15)';
+        activeModelStatusTag.style.color = '#94a3b8';
+        activeModelStatusTag.style.borderColor = '#64748b';
+      }
+    }
+    syncPresetChips(clean);
+  }
+
   // 프리셋 칩 활성화 상태 동기화
   function syncPresetChips(modelName) {
     if (!modelPresetChips) return;
+    const clean = (modelName || '').trim().toLowerCase();
     const chips = modelPresetChips.querySelectorAll('.preset-chip');
     chips.forEach(chip => {
-      chip.classList.toggle('active', chip.dataset.model.toLowerCase() === (modelName || '').toLowerCase());
+      chip.classList.toggle('active', clean !== '' && chip.dataset.model.toLowerCase() === clean);
     });
   }
 
@@ -3671,8 +4308,7 @@ document.addEventListener('DOMContentLoaded', () => {
       if (!chip) return;
       const model = chip.dataset.model;
       modelNameInput.value = model;
-      if (activeModelBadge) activeModelBadge.textContent = model;
-      syncPresetChips(model);
+      updateModelBadgeState(model);
       if (model === 'ollama') {
         if (customEndpointInput) customEndpointInput.value = 'http://localhost:11434/v1';
         checkLocalOllamaModels();
@@ -3686,8 +4322,7 @@ document.addEventListener('DOMContentLoaded', () => {
   if (modelNameInput) {
     modelNameInput.addEventListener('input', () => {
       const val = modelNameInput.value.trim();
-      if (activeModelBadge) activeModelBadge.textContent = val || '미지정';
-      syncPresetChips(val);
+      updateModelBadgeState(val);
     });
   }
 
@@ -3698,23 +4333,27 @@ document.addEventListener('DOMContentLoaded', () => {
       if (!res.ok) return;
       const data = await res.json();
       
-      if (geminiApiKeyInput && data.api_key) {
-        geminiApiKeyInput.value = data.api_key;
+      if (geminiApiKeyInput) {
+        geminiApiKeyInput.value = data.api_key || '';
       }
-      if (openaiApiKeyInput && data.openai_api_key) {
-        openaiApiKeyInput.value = data.openai_api_key;
+      if (openaiApiKeyInput) {
+        openaiApiKeyInput.value = data.openai_api_key || '';
       }
-      if (customEndpointInput && data.custom_endpoint) {
-        customEndpointInput.value = data.custom_endpoint;
+      if (customEndpointInput) {
+        customEndpointInput.value = data.custom_endpoint || '';
       }
-      if (modelNameInput && data.model_name) {
-        modelNameInput.value = data.model_name;
-        if (activeModelBadge) activeModelBadge.textContent = data.model_name;
-        syncPresetChips(data.model_name);
+      if (modelNameInput) {
+        const m = (data.model_name || '').trim();
+        modelNameInput.value = m;
+        updateModelBadgeState(m);
       }
       if (geminiTempRange && data.temperature !== undefined) {
         geminiTempRange.value = data.temperature;
         if (geminiTempDisplay) geminiTempDisplay.textContent = data.temperature;
+      }
+      if (workspacePathInput && data.workspace_dir) {
+        workspacePathInput.value = data.workspace_dir;
+        localStorage.setItem('minoriWorkspacePath', data.workspace_dir);
       }
     } catch (e) {
       console.warn('백엔드 설정 로드 대기 중 (정적 페이지 모드 또는 서버 미실행):', e.message);
@@ -3792,7 +4431,7 @@ document.addEventListener('DOMContentLoaded', () => {
   if (btnSaveApiSettings) {
     btnSaveApiSettings.addEventListener('click', async () => {
       const key = geminiApiKeyInput ? geminiApiKeyInput.value.trim() : '';
-      const model = modelNameInput ? modelNameInput.value.trim() || 'gemini-3.8-flash' : 'gemini-3.8-flash';
+      const model = modelNameInput ? modelNameInput.value.trim() : '';
       const openaiKey = openaiApiKeyInput ? openaiApiKeyInput.value.trim() : '';
       const endpoint = customEndpointInput ? customEndpointInput.value.trim() : '';
       const temp = geminiTempRange ? parseFloat(geminiTempRange.value) : 0.2;
@@ -3810,7 +4449,7 @@ document.addEventListener('DOMContentLoaded', () => {
           })
         });
         if (res.ok) {
-          if (activeModelBadge) activeModelBadge.textContent = model;
+          updateModelBadgeState(model);
           showToast('API 키 및 AI 모델 설정이 성공적으로 저장되었습니다!', 'success');
         } else {
           showToast('설정 저장에 실패했습니다.', 'error');
@@ -4058,6 +4697,71 @@ document.addEventListener('DOMContentLoaded', () => {
     btnRefreshMemories.addEventListener('click', () => {
       loadHyperMemories();
       showToast('하이퍼 메모리 목록을 새로고침했습니다.', 'info');
+    });
+  }
+
+  // 하이퍼 메모리 내보내기 (JSON 백업 다운로드)
+  const btnExportMemories = document.getElementById('btnExportMemories');
+  if (btnExportMemories) {
+    btnExportMemories.addEventListener('click', async () => {
+      try {
+        const res = await fetch('/api/memory');
+        if (!res.ok) throw new Error('메모리 조회 실패');
+        const data = await res.json();
+        const payload = {
+          type: 'minori_hyper_memory_backup',
+          version: 1,
+          exportedAt: new Date().toISOString(),
+          user_profile: data.user_profile || { title: '주인님', bio: '' },
+          memories: data.memories || []
+        };
+        downloadJson('minori_hyper_memory_backup.json', payload);
+        showToast('하이퍼 메모리 백업 파일이 다운로드되었습니다.', 'success');
+      } catch (err) {
+        showToast('하이퍼 메모리 내보내기 실패: ' + err.message, 'error');
+      }
+    });
+  }
+
+  // 하이퍼 메모리 불러오기 (JSON 파일에서 병합 또는 교체 복원)
+  const btnImportMemories = document.getElementById('btnImportMemories');
+  if (btnImportMemories) {
+    btnImportMemories.addEventListener('click', () => {
+      readJsonFile((data) => {
+        const incomingList = Array.isArray(data)
+          ? data
+          : (Array.isArray(data.memories) ? data.memories : []);
+        if (!incomingList || incomingList.length === 0) {
+          showToast('불러올 장기 기억 항목이 파일에 없습니다.', 'warn');
+          return;
+        }
+
+        const doImport = async (replaceAll) => {
+          try {
+            const res = await fetch('/api/memory/import', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                memories: incomingList,
+                user_profile: data.user_profile || undefined,
+                replace: replaceAll
+              })
+            });
+            if (!res.ok) throw new Error('서버 저장 실패');
+            const result = await res.json();
+            loadHyperMemories();
+            showToast(`하이퍼 메모리 ${result.added_count || incomingList.length}개 항목을 성공적으로 불러왔습니다.`, 'success');
+          } catch (err) {
+            showToast('하이퍼 메모리 불러오기 실패: ' + err.message, 'error');
+          }
+        };
+
+        showModalConfirm(
+          '하이퍼 메모리 불러오기 옵션',
+          `총 ${incomingList.length}개의 기억 항목을 기존 기억 목록에 유지한 채 추가(병합)하시겠습니까? (취소 선택 시 기존 기억과 무관하게 취소됩니다)`,
+          () => doImport(false)
+        );
+      });
     });
   }
 
@@ -4640,34 +5344,96 @@ document.addEventListener('DOMContentLoaded', () => {
   // 초기 설정 로드 실행
   loadBackendApiSettings();
 
-  // ==========================================
-  // 최종 초기화: 저장된 세션 트리 및 이전 대화 세션 복원
-  // ==========================================
-  try {
-    const restoredTree = restoreSessionTreeFromStorage();
-    if (!restoredTree) {
-      let initialActive = sessionTree ? sessionTree.querySelector('.session-item.active') : null;
-      if (!initialActive && sessionTree) {
-        initialActive = sessionTree.querySelector('.session-item');
+  // 백그라운드 서버 종료 버튼 (--noconsole EXE 실행 환경 편의 기능)
+  const btnShutdownServer = document.getElementById('btnShutdownServer');
+  if (btnShutdownServer) {
+    btnShutdownServer.addEventListener('click', async () => {
+      const ok = await showCyberConfirm('MINORI 백그라운드 서버를 완전히 종료하시겠습니까?');
+      if (!ok) return;
+      try {
+        await fetch('http://127.0.0.1:8000/api/shutdown', { method: 'POST' });
+      } catch (e) {}
+      if (statusIndicator) {
+        statusIndicator.textContent = '오프라인 · 서버 종료됨';
+        statusIndicator.style.color = '#ef4444';
       }
-      if (initialActive) {
-        const activeId = initialActive.dataset.chatId;
-        const title = initialActive.querySelector('.session-name').textContent.trim();
-        loadChatMessages(activeId, title);
-        saveSessionTreeToStorage();
-      } else {
-        loadChatMessages('chat_default', '미노리 시작 가이드');
-      }
-    }
-    if (typeof renderLorebookView === 'function') {
-      renderLorebookView();
-    }
-  } catch (err) {
-    console.error('초기 세션 트리/대화 복원 중 오류:', err);
+      showCyberToast('MINORI 서버가 종료되었습니다. 창을 닫으셔도 됩니다.', 'info');
+      setTimeout(() => {
+        try { window.close(); } catch (e) {}
+      }, 600);
+    });
+  }
+
+  // ==========================================
+  // 최종 초기화: 백엔드 로컬 파일(chat_sessions.json) 및 localStorage에서 대화 세션 복원
+  // ==========================================
+  async function initializeAndRestoreSessions() {
     try {
-      loadChatMessages('chat_default', '미노리 시작 가이드');
+      const res = await fetch('/api/sessions');
+      if (res.ok) {
+        const diskStore = await res.json();
+        const diskData = diskStore.sessions_data || {};
+        const diskTree = diskStore.session_tree || null;
+
+        const hasDiskMessages = Object.keys(diskData).some(
+          k => Array.isArray(diskData[k]) && diskData[k].some(m => !m.isGuide && m.content !== '미노리(MINORI) 시작 가이드' && m.content !== '미노리 시작 가이드')
+        );
+        const hasDiskCustomTree = diskTree && (
+          (Array.isArray(diskTree.notes) && diskTree.notes.length > 0) ||
+          (Array.isArray(diskTree.rootChats) && (diskTree.rootChats.length > 1 || (diskTree.rootChats[0] && diskTree.rootChats[0].id !== 'chat_default')))
+        );
+
+        if (hasDiskMessages || hasDiskCustomTree) {
+          // 디스크에 저장된 대화 데이터를 우선 복원하고 로컬과 병합
+          chatSessionsData = Object.assign({}, chatSessionsData, diskData);
+          try {
+            localStorage.setItem('minori_chat_sessions_data', JSON.stringify(chatSessionsData));
+          } catch (e) {}
+          if (diskTree) {
+            try {
+              localStorage.setItem('minori_session_tree', JSON.stringify(diskTree));
+              if (diskTree.activeChatId) {
+                localStorage.setItem('minori_active_chat_id', diskTree.activeChatId);
+              }
+            } catch (e) {}
+          }
+        } else if (Object.keys(chatSessionsData).length > 0) {
+          // 반대로 localStorage에만 이전 대화가 있는 경우 백엔드 디스크로 즉시 백업 동기화
+          syncSessionsToBackend(true);
+        }
+      }
     } catch (e) {
-      console.error('시작 가이드 로드 실패:', e);
+      console.warn('백엔드 디스크 세션 로드 생략 (로컬 스토리지 사용):', e);
+    }
+
+    try {
+      const restoredTree = restoreSessionTreeFromStorage();
+      if (!restoredTree) {
+        let initialActive = sessionTree ? sessionTree.querySelector('.session-item.active') : null;
+        if (!initialActive && sessionTree) {
+          initialActive = sessionTree.querySelector('.session-item');
+        }
+        if (initialActive) {
+          const activeId = initialActive.dataset.chatId;
+          const title = initialActive.querySelector('.session-name').textContent.trim();
+          loadChatMessages(activeId, title);
+          saveSessionTreeToStorage();
+        } else {
+          loadChatMessages('chat_default', '미노리 시작 가이드');
+        }
+      }
+      if (typeof renderLorebookView === 'function') {
+        renderLorebookView();
+      }
+    } catch (err) {
+      console.error('초기 세션 트리/대화 복원 중 오류:', err);
+      try {
+        loadChatMessages('chat_default', '미노리 시작 가이드');
+      } catch (e) {
+        console.error('시작 가이드 로드 실패:', e);
+      }
     }
   }
+
+  initializeAndRestoreSessions();
 });
